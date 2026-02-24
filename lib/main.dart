@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:slate/constants/app_strings.dart';
+import 'package:slate/screens/error_app.dart';
+import 'dart:async';
 
 import 'models/todo.dart';
 import 'providers/todo_provider.dart';
@@ -10,15 +12,31 @@ import 'screens/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Hive.initFlutter();
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('Flutter error: ${details.exception}');
+  };
 
-  Hive.registerAdapter(TodoAdapter());
-  Hive.registerAdapter(StatusAdapter());
-  Hive.registerAdapter(RepeatFrequencyAdapter());
+  runZonedGuarded(
+    () async {
+      try {
+        await Hive.initFlutter();
 
-  await Hive.openBox<Todo>('todos');
+        Hive.registerAdapter(TodoAdapter());
+        Hive.registerAdapter(StatusAdapter());
+        Hive.registerAdapter(RepeatFrequencyAdapter());
 
-  runApp(const MyApp());
+        await Hive.openBox<Todo>('todos');
+
+        runApp(const MyApp());
+      } catch (e) {
+        runApp(const ErrorApp());
+      }
+    },
+    (error, stack) {
+      debugPrint(error.toString());
+    },
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -42,7 +60,7 @@ class MyApp extends StatelessWidget {
           ),
 
           scaffoldBackgroundColor: const Color(0xFF121212),
-        ),        
+        ),
         home: const HomeScreen(),
       ),
     );

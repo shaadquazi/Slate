@@ -155,6 +155,7 @@ class TodoProvider extends ChangeNotifier {
       updatedAt: nextDate,
       repeat: old.repeat,
       repeatEndDate: old.repeatEndDate,
+      imageBytes: old.imageBytes,
     );
 
     final box = Hive.box<Todo>('todos');
