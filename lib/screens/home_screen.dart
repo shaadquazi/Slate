@@ -66,37 +66,31 @@ class HomeScreen extends StatelessWidget {
     final provider = context.watch<TodoProvider>();
 
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(6),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(
-            child: DropdownMenu<RepeatFrequency?>(
-              initialSelection: provider.repeatFilter,
-              label: const Text('Duration'),
-              onSelected: provider.setRepeatFilter,
-              dropdownMenuEntries: [
-                const DropdownMenuEntry(value: null, label: 'All'),
-                ...RepeatFrequency.values
-                    .where((r) => r != RepeatFrequency.none)
-                    .map((r) => DropdownMenuEntry(value: r, label: r.label)),
-              ],
-            ),
+          DropdownMenu<RepeatFrequency?>(
+            initialSelection: provider.repeatFilter,
+            label: const Text('Duration'),
+            onSelected: provider.setRepeatFilter,
+            dropdownMenuEntries: [
+              const DropdownMenuEntry(value: null, label: 'All'),
+              ...RepeatFrequency.values
+                  .where((r) => r != RepeatFrequency.none)
+                  .map((r) => DropdownMenuEntry(value: r, label: r.label)),
+            ],
           ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: DropdownMenu<Status?>(
-              initialSelection: provider.statusFilter,
-              label: const Text('Status'),
-              onSelected: provider.setStatusFilter,
-              dropdownMenuEntries: [
-                const DropdownMenuEntry(value: null, label: 'All'),
-                ...Status.values.map(
-                  (s) => DropdownMenuEntry(value: s, label: s.label),
-                ),
-              ],
-            ),
+          DropdownMenu<Status?>(
+            initialSelection: provider.statusFilter,
+            label: const Text('Status'),
+            onSelected: provider.setStatusFilter,
+            dropdownMenuEntries: [
+              const DropdownMenuEntry(value: null, label: 'All'),
+              ...Status.values.map(
+                (s) => DropdownMenuEntry(value: s, label: s.label),
+              ),
+            ],
           ),
         ],
       ),

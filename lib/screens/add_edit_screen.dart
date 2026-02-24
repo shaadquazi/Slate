@@ -8,6 +8,7 @@ import 'package:slate/screens/editable_image_field.dart';
 import 'package:slate/widgets/image_picker_field.dart';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:slate/widgets/optional_description_field.dart';
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
 import '../constants/app_strings.dart';
@@ -118,23 +119,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: descCtrl,
-
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.newline,
-
-                  minLines: 3,
-                  maxLines: null,
-                  expands: false,
-
-                  decoration: const InputDecoration(
-                    labelText: LabelStrings.description,
-                    alignLabelWithHint:
-                        true, // 👈 fixes label position for multiline
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                OptionalDescriptionField(controller: descCtrl),
                 const SizedBox(height: 16),
                 if (imageBytes == null) ...[
                   ImagePickerField(
@@ -257,8 +242,8 @@ class _AddEditScreenState extends State<AddEditScreen> {
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
-                        child: Wrap(
-                          spacing: 8,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: Status.values.map((s) {
                             final selected = status == s;
                             return ChoiceChip(
@@ -286,9 +271,15 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     ),
                 ],
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _saveTodo,
-                  child: Text(isEdit ? BtnStrings.update : BtnStrings.save),
+                Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.end, // aligns children to the right
+                  children: [
+                    ElevatedButton(
+                      onPressed: _saveTodo,
+                      child: Text(isEdit ? BtnStrings.update : BtnStrings.save),
+                    ),
+                  ],
                 ),
               ],
             ),
