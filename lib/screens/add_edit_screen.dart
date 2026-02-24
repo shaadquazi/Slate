@@ -4,8 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:slate/screens/editable_image_field.dart';
 import 'package:slate/widgets/image_picker_field.dart';
 
+import 'package:image_picker/image_picker.dart';
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
 import '../constants/app_strings.dart';
@@ -153,15 +155,9 @@ class _AddEditScreenState extends State<AddEditScreen> {
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
-
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.memory(
-                            imageBytes!,
-                            width: 120, // standard size
-                            height: 120,
-                            fit: BoxFit.cover,
-                          ),
+                        EditableImageField(
+                          isEdit: isEdit ? true : imageBytes != null,
+                          initialBytes: imageBytes,
                         ),
                       ],
                     ),
@@ -301,4 +297,15 @@ class _AddEditScreenState extends State<AddEditScreen> {
       ),
     );
   }
+}
+
+// Function to pick an image and return bytes
+Future<Uint8List?> pickImage() async {
+  final ImagePicker picker = ImagePicker();
+  // Pick an image from the gallery
+  final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+  if (file != null) {
+    return await file.readAsBytes(); // return image as Uint8List
+  }
+  return null;
 }
