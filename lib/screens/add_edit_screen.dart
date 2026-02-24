@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:slate/screens/editable_image_field.dart';
 import 'package:slate/widgets/image_picker_field.dart';
 
-import 'package:image_picker/image_picker.dart';
 import 'package:slate/widgets/optional_description_field.dart';
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
@@ -31,6 +29,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
   RepeatFrequency repeat = RepeatFrequency.daily;
   DateTime? repeatEndDate;
   DateTime? completedOn;
+  DateTime? dueDate;
   Uint8List? imageBytes;
 
   bool get isEdit => widget.todo != null;
@@ -49,6 +48,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
     repeat = widget.todo?.repeat ?? RepeatFrequency.none;
     repeatEndDate = widget.todo?.repeatEndDate;
     completedOn = widget.todo?.completedOn;
+    dueDate = widget.todo?.dueDate;
     imageBytes = widget.todo?.imageBytes;
   }
 
@@ -68,6 +68,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
         repeat: repeat,
         repeatEndDate: repeatEndDate,
         imageBytes: imageBytes,
+        dueDate: dueDate,
       );
     } else {
       provider.addTodo(
@@ -81,6 +82,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           imageBytes: imageBytes,
+          dueDate: dueDate,
         ),
       );
     }
@@ -136,17 +138,56 @@ class _AddEditScreenState extends State<AddEditScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Photo',
+                          LabelStrings.photo,
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
                         EditableImageField(
                           isEdit: isEdit ? true : imageBytes != null,
                           initialBytes: imageBytes,
+                          onChanged: (b) {
+                            setState(() => imageBytes = b);
+                          },
                         ),
                       ],
                     ),
                   ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: dueDate ?? DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) setState(() => dueDate = picked);
+                        },
+                        child: InputDecorator(
+                          decoration: const InputDecoration(
+                            labelText: LabelStrings.dueDate,
+                            border: OutlineInputBorder(),
+                          ),
+                          child: Text(
+                            dueDate == null
+                                ? MsgStrings.noDueDate
+                                : DateFormat.yMMMd().format(dueDate!),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (dueDate != null)
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() => dueDate = null),
+                        tooltip: LabelStrings.clearDueDate,
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +195,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
                       title: const Text(
-                        'Repeat',
+                        LabelStrings.repeat,
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       value: repeatEnabled,
@@ -177,7 +218,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                           /// Frequency dropdown
                           Expanded(
                             child: DropdownMenu<RepeatFrequency>(
-                              label: const Text('Frequency'),
+                              label: const Text(LabelStrings.frequency),
                               initialSelection: repeat,
                               onSelected: (v) => setState(() => repeat = v!),
                               dropdownMenuEntries: RepeatFrequency.values
@@ -212,12 +253,12 @@ class _AddEditScreenState extends State<AddEditScreen> {
                               },
                               child: InputDecorator(
                                 decoration: const InputDecoration(
-                                  labelText: 'End date',
+                                  labelText: LabelStrings.endDate,
                                   border: OutlineInputBorder(),
                                 ),
                                 child: Text(
                                   repeatEndDate == null
-                                      ? 'No end date'
+                                      ? MsgStrings.noEndDate
                                       : DateFormat.yMMMd().format(
                                           repeatEndDate!,
                                         ),
@@ -236,7 +277,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Status',
+                        LabelStrings.status,
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
@@ -265,7 +306,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Completed on ${DateFormat.yMMMd().add_jm().format(completedOn!)}',
+                        '${MsgStrings.completedOnPrefix} ${DateFormat.yMMMd().add_jm().format(completedOn!)}',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -288,15 +329,4 @@ class _AddEditScreenState extends State<AddEditScreen> {
       ),
     );
   }
-}
-
-// Function to pick an image and return bytes
-Future<Uint8List?> pickImage() async {
-  final ImagePicker picker = ImagePicker();
-  // Pick an image from the gallery
-  final XFile? file = await picker.pickImage(source: ImageSource.gallery);
-  if (file != null) {
-    return await file.readAsBytes(); // return image as Uint8List
-  }
-  return null;
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:slate/constants/app_strings.dart';
 
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
@@ -54,8 +56,6 @@ class TodoTile extends StatelessWidget {
       confirmDismiss: (direction) async {
         final provider = context.read<TodoProvider>();
 
-        print(direction); // 👈 debug once
-
         /// RIGHT swipe → progress
         if (direction == DismissDirection.startToEnd) {
           final next = todo.status.next;
@@ -96,13 +96,57 @@ class _TodoContent extends StatefulWidget {
 class _TodoContentState extends State<_TodoContent> {
   bool expanded = false;
 
+  static final _dateFormat = DateFormat.MMMd();
+
+  Widget? _buildTrailingDate(BuildContext context) {
+    final todo = widget.todo;
+    final DateTime? date;
+    if (todo.status == Status.completed && todo.completedOn != null) {
+      date = todo.completedOn;
+    } else if ((todo.status == Status.pending || todo.status == Status.inProgress) && todo.dueDate != null) {
+      date = todo.dueDate;
+    } else {
+      return null;
+    }
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Text(
+        date == null ? '' : _dateFormat.format(date),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
+              fontSize: 12,
+            ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final desc = widget.todo.description;
+    final hasDescription = desc.trim().isNotEmpty;
+    final trailing = _buildTrailingDate(context);
+
+    // If there's no description, render a simple tile without subtitle.
+    if (!hasDescription) {
+      return ListTile(
+        title: Text(widget.todo.title),
+        trailing: trailing,
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AddEditScreen(todo: widget.todo),
+            ),
+          );
+        },
+      );
+    }
+
     final maxDescriptionLength = 20;
 
     return ListTile(
       title: Text(widget.todo.title),
+      trailing: trailing,
       subtitle: expanded
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +158,7 @@ class _TodoContentState extends State<_TodoContent> {
                 GestureDetector(
                   onTap: () => setState(() => expanded = false),
                   child: Text(
-                    'less',
+                    TodoTileStrings.less,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12,
@@ -141,7 +185,7 @@ class _TodoContentState extends State<_TodoContent> {
                       child: GestureDetector(
                         onTap: () => setState(() => expanded = true),
                         child: Text(
-                          'more',
+                          TodoTileStrings.more,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontSize: 12,

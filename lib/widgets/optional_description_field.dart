@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:slate/constants/app_strings.dart';
 
 class OptionalDescriptionField extends StatefulWidget {
   final TextEditingController controller;
@@ -14,6 +15,12 @@ class _OptionalDescriptionFieldState extends State<OptionalDescriptionField> {
   bool isExpanded = false;
 
   @override
+  void initState() {
+    super.initState();
+    isExpanded = widget.controller.text.trim().isNotEmpty;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start, // left align everything
@@ -26,7 +33,7 @@ class _OptionalDescriptionFieldState extends State<OptionalDescriptionField> {
               onPressed: () => setState(() => isExpanded = true),
               icon: const Icon(Icons.add, size: 20),
               label: const Text(
-                "Add description",
+                LabelStrings.addDescription,
                 style: TextStyle(fontSize: 16),
               ),
               style: TextButton.styleFrom(
@@ -47,13 +54,13 @@ class _OptionalDescriptionFieldState extends State<OptionalDescriptionField> {
             maxLines: null,
             expands: false,
             decoration: InputDecoration(
-              labelText: 'Description',
+              labelText: LabelStrings.description,
               alignLabelWithHint: true,
               border: const OutlineInputBorder(),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 12,
-              ), // consistent padding
+              ),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () {

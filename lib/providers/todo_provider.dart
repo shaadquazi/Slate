@@ -5,30 +5,62 @@ import '../models/todo.dart';
 
 class TodoProvider extends ChangeNotifier {
   late Box<Todo> _box;
-  Status? _statusFilter;
-  RepeatFrequency? _repeatFilter;
+  Set<Status> _statusFilters = {};
+  Set<RepeatFrequency> _repeatFilters = {};
 
-  Status? get statusFilter => _statusFilter;
-  RepeatFrequency? get repeatFilter => _repeatFilter;
+  Set<Status> get statusFilters => Set.from(_statusFilters);
+  Set<RepeatFrequency> get repeatFilters => Set.from(_repeatFilters);
+
+  static final List<RepeatFrequency> repeatFilterOptions = [
+    RepeatFrequency.daily,
+    RepeatFrequency.weekly,
+    RepeatFrequency.monthly,
+    RepeatFrequency.yearly,
+  ];
 
   List<Todo> _todos = [];
 
-  void setStatusFilter(Status? s) {
-    _statusFilter = s;
+  void setStatusFilters(Set<Status> value) {
+    _statusFilters = Set.from(value);
     notifyListeners();
   }
 
-  void setRepeatFilter(RepeatFrequency? r) {
-    _repeatFilter = r;
+  void setRepeatFilters(Set<RepeatFrequency> value) {
+    _repeatFilters = Set.from(value);
     notifyListeners();
   }
+
+  void toggleStatusFilter(Status s) {
+    if (_statusFilters.contains(s)) {
+      _statusFilters = Set.from(_statusFilters)..remove(s);
+    } else {
+      _statusFilters = Set.from(_statusFilters)..add(s);
+    }
+    notifyListeners();
+  }
+
+  void toggleRepeatFilter(RepeatFrequency r) {
+    if (!repeatFilterOptions.contains(r)) return;
+    if (_repeatFilters.contains(r)) {
+      _repeatFilters = Set.from(_repeatFilters)..remove(r);
+    } else {
+      _repeatFilters = Set.from(_repeatFilters)..add(r);
+    }
+    notifyListeners();
+  }
+
+  bool get _statusFilterIsAll =>
+      _statusFilters.isEmpty || _statusFilters.length == Status.values.length;
+  bool get _repeatFilterIsAll =>
+      _repeatFilters.isEmpty ||
+      _repeatFilters.length == repeatFilterOptions.length;
 
   List<Todo> get _baseFiltered {
     return _todos.where((t) {
-      final statusMatch = _statusFilter == null || t.status == _statusFilter;
-
-      final repeatMatch = _repeatFilter == null || t.repeat == _repeatFilter;
-
+      final statusMatch =
+          _statusFilterIsAll || _statusFilters.contains(t.status);
+      final repeatMatch =
+          _repeatFilterIsAll || _repeatFilters.contains(t.repeat);
       return statusMatch && repeatMatch;
     }).toList();
   }
@@ -75,6 +107,8 @@ class TodoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  static const _omitDueDate = Object();
+
   void updateTodo({
     required Todo todo,
     String? title,
@@ -83,12 +117,14 @@ class TodoProvider extends ChangeNotifier {
     RepeatFrequency? repeat,
     DateTime? repeatEndDate,
     Uint8List? imageBytes,
+    Object? dueDate = _omitDueDate,
   }) {
     bool statusChanged = false;
 
     if (title != null) todo.title = title;
     if (description != null) todo.description = description;
     if (imageBytes != null) todo.imageBytes = imageBytes;
+    if (!identical(dueDate, _omitDueDate)) todo.dueDate = dueDate as DateTime?;
 
     if (status != null && todo.status != status) {
       todo.status = status;
@@ -121,7 +157,10 @@ class TodoProvider extends ChangeNotifier {
   }
 
   void _createNextRepeat(Todo old) {
-    DateTime nextDate = old.createdAt;
+    // Base the next occurrence on when this task was completed, falling back
+    // to the original creation time if completion is not available.
+    DateTime baseDate = old.completedOn ?? old.createdAt;
+    DateTime nextDate = baseDate;
 
     switch (old.repeat) {
       case RepeatFrequency.daily:
@@ -151,11 +190,12 @@ class TodoProvider extends ChangeNotifier {
       title: old.title,
       description: old.description,
       status: Status.pending,
-      createdAt: nextDate,
-      updatedAt: nextDate,
+      createdAt: old.createdAt,
+      updatedAt: DateTime.now(),
       repeat: old.repeat,
       repeatEndDate: old.repeatEndDate,
       imageBytes: old.imageBytes,
+      dueDate: nextDate,
     );
 
     final box = Hive.box<Todo>('todos');

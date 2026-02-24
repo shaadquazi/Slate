@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:slate/constants/app_strings.dart';
 import 'package:slate/screens/error_app.dart';
-import 'dart:async';
+import 'package:slate/theme/app_theme.dart';
 
 import 'models/todo.dart';
 import 'providers/todo_provider.dart';
@@ -49,18 +51,9 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: AppStrings.appName,
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          useMaterial3: true,
-          fontFamily: 'AppFont',
-
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.blueGrey,
-            brightness: Brightness.dark,
-          ),
-
-          scaffoldBackgroundColor: const Color(0xFF121212),
-        ),
+        theme: primaryTheme,
+        darkTheme: secondaryTheme,
+        themeMode: ThemeMode.dark,
         home: const HomeScreen(),
       ),
     );

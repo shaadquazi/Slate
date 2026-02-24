@@ -77,6 +77,9 @@ class Todo extends HiveObject {
   @HiveField(9)
   Uint8List? imageBytes;
 
+  @HiveField(10)
+  DateTime? dueDate;
+
   Todo({
     required this.id,
     required this.title,
@@ -88,6 +91,7 @@ class Todo extends HiveObject {
     this.repeatEndDate,
     this.completedOn,
     this.imageBytes,
+    this.dueDate,
   });
 }
 

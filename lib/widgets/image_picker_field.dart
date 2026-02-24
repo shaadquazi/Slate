@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:slate/constants/app_strings.dart';
 
 class ImagePickerField extends StatefulWidget {
   final Uint8List? initialBytes;
@@ -46,7 +47,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Photo',
+          LabelStrings.photo,
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
@@ -83,7 +84,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera),
-              title: const Text('Camera'),
+              title: const Text(ImagePickerStrings.camera),
               onTap: () {
                 Navigator.pop(context);
                 _pick(ImageSource.camera);
@@ -91,7 +92,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
             ),
             ListTile(
               leading: const Icon(Icons.photo),
-              title: const Text('Gallery'),
+              title: const Text(ImagePickerStrings.gallery),
               onTap: () {
                 Navigator.pop(context);
                 _pick(ImageSource.gallery);

@@ -6,10 +6,12 @@ import 'package:slate/widgets/image_picker_field.dart';
 class EditableImageField extends StatefulWidget {
   final bool isEdit;
   final Uint8List? initialBytes;
+  final ValueChanged<Uint8List?>? onChanged;
 
   const EditableImageField({
     super.key,
     this.initialBytes,
+    this.onChanged,
     required this.isEdit,
   });
 
@@ -79,6 +81,7 @@ class _EditableImageFieldState extends State<EditableImageField> {
         initialBytes: imageBytes,
         onChanged: (b) {
           setState(() => imageBytes = b);
+          widget.onChanged?.call(b);
         },
       );
     }
@@ -113,6 +116,7 @@ class _EditableImageFieldState extends State<EditableImageField> {
                           final newBytes = await pickImage();
                           if (newBytes != null) {
                             setState(() => imageBytes = newBytes);
+                            widget.onChanged?.call(newBytes);
                           }
                         },
                         child: Container(

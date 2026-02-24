@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:slate/constants/app_strings.dart';
 
 class ErrorApp extends StatelessWidget {
   const ErrorApp({super.key});
@@ -8,7 +9,7 @@ class ErrorApp extends StatelessWidget {
     return const MaterialApp(
       home: Scaffold(
         body: Center(
-          child: Text('Something went wrong. Please restart the app.'),
+          child: Text(ErrorStrings.genericStartup),
         ),
       ),
     );
