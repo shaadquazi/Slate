@@ -1,11 +1,12 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:slate/constants/app_strings.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 class ImagePickerField extends StatefulWidget {
   final Uint8List? initialBytes;
-  final Function(Uint8List?) onChanged;
+  final ValueChanged<Uint8List?> onChanged;
 
   const ImagePickerField({
     super.key,
@@ -18,84 +19,74 @@ class ImagePickerField extends StatefulWidget {
 }
 
 class _ImagePickerFieldState extends State<ImagePickerField> {
-  final picker = ImagePicker();
-  Uint8List? bytes;
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
 
-  @override
-  void initState() {
-    super.initState();
-    bytes = widget.initialBytes;
-  }
-
-  Future<void> _pick(ImageSource source) async {
-    final picked = await picker.pickImage(
-      source: source,
-      imageQuality: 80,
-    );
-
-    if (picked == null) return;
-
-    final data = await picked.readAsBytes();
-
-    setState(() => bytes = data);
-    widget.onChanged(data);
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      widget.onChanged(bytes);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          LabelStrings.photo,
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-
-        GestureDetector(
-          onTap: () => _showPicker(context),
-          child: Container(
-            height: 120,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey),
-            ),
-            child: bytes == null
-                ? const Center(child: Icon(Icons.camera_alt))
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.memory(
-                      bytes!,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+    final l10n = AppLocalizations.of(context)!;
+    return InkWell(
+      onTap: () => _showPickerOptions(context),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 100,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Theme.of(context).dividerColor,
+            style: BorderStyle.solid,
           ),
         ),
-      ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_a_photo_outlined,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.photo,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.outline,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  void _showPicker(BuildContext context) {
+  void _showPickerOptions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.camera),
-              title: const Text(ImagePickerStrings.camera),
+              leading: const Icon(Icons.photo_library),
+              title: Text(l10n.gallery),
               onTap: () {
                 Navigator.pop(context);
-                _pick(ImageSource.camera);
+                _pickImage(ImageSource.gallery);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo),
-              title: const Text(ImagePickerStrings.gallery),
+              leading: const Icon(Icons.camera_alt),
+              title: Text(l10n.camera),
               onTap: () {
                 Navigator.pop(context);
-                _pick(ImageSource.gallery);
+                _pickImage(ImageSource.camera);
               },
             ),
           ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slate/constants/app_strings.dart';
 import 'package:slate/models/todo.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 import '../providers/todo_provider.dart';
 import 'todo_tile.dart';
@@ -33,6 +33,7 @@ class _StatusSectionState extends State<StatusSection> {
   Widget build(BuildContext context) {
     if (widget.todos.isEmpty) return const SizedBox.shrink();
 
+    final l10n = AppLocalizations.of(context)!;
     final useLimit = !widget.expandAll;
     final visibleTodos = useLimit && !expanded
         ? widget.todos.take(previewCount).toList()
@@ -59,8 +60,8 @@ class _StatusSectionState extends State<StatusSection> {
             onPressed: () => setState(() => expanded = !expanded),
             child: Text(
               expanded
-                  ? SectionStrings.showLess
-                  : SectionStrings.showMore(remaining),
+                  ? l10n.showLess
+                  : l10n.showMore(remaining),
             ),
           ),
       ],
@@ -82,6 +83,7 @@ class _StatusHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<TodoProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
@@ -104,7 +106,7 @@ class _StatusHeader extends StatelessWidget {
               if (status == Status.completed && count > 0)
                 IconButton(
                   icon: const Icon(Icons.delete_sweep),
-                  tooltip: TooltipStrings.clearVisible,
+                  tooltip: l10n.clearVisible,
                   onPressed: () =>
                       _confirmClear(context, provider, visibleTodos ?? []),
                 ),
@@ -120,24 +122,25 @@ class _StatusHeader extends StatelessWidget {
     TodoProvider provider,
     List<Todo> todos,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text(DialogStrings.clearCompletedTitle),
+        title: Text(l10n.clearCompletedTitle),
         content: Text(
-          DialogStrings.clearCompletedContent(todos.length),
+          l10n.clearCompletedContent(todos.length),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(BtnStrings.cancel),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               provider.deleteTodos(todos);
               Navigator.pop(context);
             },
-            child: const Text(BtnStrings.delete),
+            child: Text(l10n.delete),
           ),
         ],
       ),

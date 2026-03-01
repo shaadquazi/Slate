@@ -1,32 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'dart:typed_data';
 import '../models/todo.dart';
+import '../repositories/todo_repository.dart';
+import '../services/todo_service.dart';
+
+enum DateFilter { daily, weekly, monthly, yearly }
+
+extension DateFilterX on DateFilter {
+  String get label {
+    switch (this) {
+      case DateFilter.daily:
+        return 'Today';
+      case DateFilter.weekly:
+        return 'This week';
+      case DateFilter.monthly:
+        return 'This month';
+      case DateFilter.yearly:
+        return 'This year';
+    }
+  }
+}
 
 class TodoProvider extends ChangeNotifier {
-  late Box<Todo> _box;
+  final TodoRepository _repository;
+  final TodoService _service;
+
+  TodoProvider(this._repository, this._service);
+
+  static const String statusFiltersKey = 'status_filters';
+  static const String dateFiltersKey = 'date_filters';
+
   Set<Status> _statusFilters = {};
-  Set<RepeatFrequency> _repeatFilters = {};
+  Set<DateFilter> _dateFilters = {};
 
   Set<Status> get statusFilters => Set.from(_statusFilters);
-  Set<RepeatFrequency> get repeatFilters => Set.from(_repeatFilters);
+  Set<DateFilter> get dateFilters => Set.from(_dateFilters);
 
-  static final List<RepeatFrequency> repeatFilterOptions = [
-    RepeatFrequency.daily,
-    RepeatFrequency.weekly,
-    RepeatFrequency.monthly,
-    RepeatFrequency.yearly,
-  ];
+  static const List<DateFilter> dateFilterOptions = DateFilter.values;
 
   List<Todo> _todos = [];
 
   void setStatusFilters(Set<Status> value) {
     _statusFilters = Set.from(value);
+    _saveSettings();
     notifyListeners();
   }
 
-  void setRepeatFilters(Set<RepeatFrequency> value) {
-    _repeatFilters = Set.from(value);
+  void setDateFilters(Set<DateFilter> value) {
+    _dateFilters = Set.from(value);
+    _saveSettings();
     notifyListeners();
   }
 
@@ -36,188 +58,141 @@ class TodoProvider extends ChangeNotifier {
     } else {
       _statusFilters = Set.from(_statusFilters)..add(s);
     }
+    _saveSettings();
     notifyListeners();
   }
 
-  void toggleRepeatFilter(RepeatFrequency r) {
-    if (!repeatFilterOptions.contains(r)) return;
-    if (_repeatFilters.contains(r)) {
-      _repeatFilters = Set.from(_repeatFilters)..remove(r);
+  void toggleDateFilter(DateFilter d) {
+    if (_dateFilters.contains(d)) {
+      _dateFilters = Set.from(_dateFilters)..remove(d);
     } else {
-      _repeatFilters = Set.from(_repeatFilters)..add(r);
+      _dateFilters = Set.from(_dateFilters)..add(d);
     }
+    _saveSettings();
     notifyListeners();
   }
 
-  bool get _statusFilterIsAll =>
-      _statusFilters.isEmpty || _statusFilters.length == Status.values.length;
-  bool get _repeatFilterIsAll =>
-      _repeatFilters.isEmpty ||
-      _repeatFilters.length == repeatFilterOptions.length;
-
-  List<Todo> get _baseFiltered {
-    return _todos.where((t) {
-      final statusMatch =
-          _statusFilterIsAll || _statusFilters.contains(t.status);
-      final repeatMatch =
-          _repeatFilterIsAll || _repeatFilters.contains(t.repeat);
-      return statusMatch && repeatMatch;
-    }).toList();
+  List<Todo> get _filtered {
+    return _service.getFilteredTodos(
+      allTodos: _todos,
+      statusFilters: _statusFilters,
+      dateFilters: _dateFilters,
+    );
   }
 
   List<Todo> _sort(List<Todo> list) {
-    list.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    list.sort((a, b) {
+      if (a.dueDate != null && b.dueDate != null) {
+        final cmp = a.dueDate!.compareTo(b.dueDate!);
+        if (cmp != 0) return cmp;
+      } else if (a.dueDate != null && b.dueDate == null) {
+        return -1;
+      } else if (a.dueDate == null && b.dueDate != null) {
+        return 1;
+      }
+      return b.updatedAt.compareTo(a.updatedAt);
+    });
     return list;
   }
 
-  List<Todo> get pendingTodos =>
-      _sort(_baseFiltered.where((t) => t.status == Status.pending).toList());
+  List<Todo> get pendingTodos => _sort(_filtered.where((t) => t.status == Status.pending).toList());
+  List<Todo> get currentTodos => _sort(_filtered.where((t) => t.status == Status.inProgress).toList());
+  List<Todo> get completedTodos => _sort(_filtered.where((t) => t.status == Status.completed).toList());
 
-  List<Todo> get currentTodos =>
-      _sort(_baseFiltered.where((t) => t.status == Status.inProgress).toList());
-
-  List<Todo> get completedTodos =>
-      _sort(_baseFiltered.where((t) => t.status == Status.completed).toList());
-
-  void loadTodos() {
-    _box = Hive.box<Todo>('todos');
-    _todos = _box.values.toList();
+  Future<void> loadTodos() async {
+    _todos = _repository.getAllTodos();
+    _loadSettings();
     notifyListeners();
   }
 
-  void addTodo(Todo todo) {
-    _box.put(todo.id, todo);
+  Future<void> addTodo(Todo todo) async {
+    await _repository.saveTodo(todo);
     _todos.add(todo);
     notifyListeners();
   }
 
-  void deleteTodo(Todo todo) {
-    todo.delete();
+  Future<void> createAndAddTodo({
+    required String title,
+    required String description,
+    required Status status,
+    required RepeatFrequency repeat,
+    DateTime? repeatEndDate,
+    DateTime? dueDate,
+    Uint8List? imageBytes,
+  }) async {
+    final todo = await _service.createTodo(
+      title: title,
+      description: description,
+      status: status,
+      repeat: repeat,
+      repeatEndDate: repeatEndDate,
+      dueDate: dueDate,
+      imageBytes: imageBytes,
+    );
+    await addTodo(todo);
+  }
+
+  Future<void> deleteTodo(Todo todo) async {
+    await _repository.deleteTodo(todo);
     _todos.remove(todo);
     notifyListeners();
   }
 
-  void deleteTodos(List<Todo> todos) {
+  Future<void> deleteTodos(List<Todo> todos) async {
     for (final t in todos) {
-      t.delete(); // Hive delete (or your storage delete)
+      await _repository.deleteTodo(t);
     }
-
     _todos.removeWhere((t) => todos.contains(t));
-
     notifyListeners();
   }
 
-  static const _omitDueDate = Object();
-
-  void updateTodo({
-    required Todo todo,
+  Future<void> updateTodo(Todo todo, {
     String? title,
     String? description,
     Status? status,
     RepeatFrequency? repeat,
     DateTime? repeatEndDate,
+    DateTime? dueDate,
     Uint8List? imageBytes,
-    Object? dueDate = _omitDueDate,
-  }) {
-    bool statusChanged = false;
-
-    if (title != null) todo.title = title;
-    if (description != null) todo.description = description;
-    if (imageBytes != null) todo.imageBytes = imageBytes;
-    if (!identical(dueDate, _omitDueDate)) todo.dueDate = dueDate as DateTime?;
-
-    if (status != null && todo.status != status) {
-      todo.status = status;
-      statusChanged = true;
-    }
-
-    if (repeat != null) todo.repeat = repeat;
-    if (repeatEndDate != null) todo.repeatEndDate = repeatEndDate;
-
-    todo.updatedAt = DateTime.now();
-
-    if (statusChanged && todo.status == Status.completed) {
-      todo.completedOn = DateTime.now();
-    }
-
-    todo.save();
-
-    // Create next repeated task if completed
-    if (statusChanged &&
-        todo.status == Status.completed &&
-        todo.repeat != RepeatFrequency.none) {
-      _createNextRepeat(todo);
-    }
-
-    notifyListeners();
-  }
-
-  void updateStatus(Todo todo, Status status) {
-    updateTodo(todo: todo, status: status);
-  }
-
-  void _createNextRepeat(Todo old) {
-    // Base the next occurrence on when this task was completed, falling back
-    // to the original creation time if completion is not available.
-    DateTime baseDate = old.completedOn ?? old.createdAt;
-    DateTime nextDate = baseDate;
-
-    switch (old.repeat) {
-      case RepeatFrequency.daily:
-        nextDate = nextDate.add(const Duration(days: 1));
-        break;
-      case RepeatFrequency.weekly:
-        nextDate = nextDate.add(const Duration(days: 7));
-        break;
-      case RepeatFrequency.monthly:
-        nextDate = DateTime(nextDate.year, nextDate.month + 1, nextDate.day);
-        break;
-      case RepeatFrequency.yearly:
-        nextDate = DateTime(nextDate.year + 1, nextDate.month, nextDate.day);
-        break;
-      case RepeatFrequency.none:
-        return; // no repeat
-    }
-
-    // Stop if next date is after repeatEndDate
-    if (old.repeatEndDate != null && nextDate.isAfter(old.repeatEndDate!)) {
-      return;
-    }
-
-    // Create a NEW Todo object (safe for Hive)
-    final newTodo = Todo(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: old.title,
-      description: old.description,
-      status: Status.pending,
-      createdAt: old.createdAt,
-      updatedAt: DateTime.now(),
-      repeat: old.repeat,
-      repeatEndDate: old.repeatEndDate,
-      imageBytes: old.imageBytes,
-      dueDate: nextDate,
+    bool clearDueDate = false,
+  }) async {
+    await _service.updateTodo(
+      todo,
+      title: title,
+      description: description,
+      status: status,
+      repeat: repeat,
+      repeatEndDate: repeatEndDate,
+      dueDate: dueDate,
+      imageBytes: imageBytes,
+      clearDueDate: clearDueDate,
     );
-
-    final box = Hive.box<Todo>('todos');
-    box.add(newTodo);
-
-    // Add to provider list so UI updates
-    _todos.add(newTodo);
-
+    _todos = _repository.getAllTodos();
     notifyListeners();
   }
 
-  void clearCompleted() {
-    final completed = _todos
-        .where((t) => t.status == Status.completed)
-        .toList();
+  Future<void> updateStatus(Todo todo, Status status) async {
+    await updateTodo(todo, status: status);
+  }
 
-    for (final t in completed) {
-      t.delete(); // Hive delete
+  void _saveSettings() {
+    _repository.saveSettings(statusFiltersKey, _statusFilters.map((s) => s.index).toList());
+    _repository.saveSettings(dateFiltersKey, _dateFilters.map((d) => d.index).toList());
+  }
+
+  void _loadSettings() {
+    final statusIndices = _repository.getSetting(statusFiltersKey) as List?;
+    if (statusIndices != null) {
+      _statusFilters = statusIndices.map((i) => Status.values[i as int]).toSet();
     }
+    final dateIndices = _repository.getSetting(dateFiltersKey) as List?;
+    if (dateIndices != null) {
+      _dateFilters = dateIndices.map((i) => DateFilter.values[i as int]).toSet();
+    }
+  }
 
-    _todos.removeWhere((t) => t.status == Status.completed);
-
-    notifyListeners();
+  Future<void> clearCompleted() async {
+    final completed = _todos.where((t) => t.status == Status.completed).toList();
+    await deleteTodos(completed);
   }
 }

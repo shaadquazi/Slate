@@ -80,6 +80,9 @@ class Todo extends HiveObject {
   @HiveField(10)
   DateTime? dueDate;
 
+  @HiveField(11)
+  String? imagePath;
+
   Todo({
     required this.id,
     required this.title,
@@ -90,8 +93,9 @@ class Todo extends HiveObject {
     this.repeat = RepeatFrequency.none,
     this.repeatEndDate,
     this.completedOn,
-    this.imageBytes,
     this.dueDate,
+    this.imagePath,
+    this.imageBytes,
   });
 }
 
@@ -126,6 +130,22 @@ extension RepeatFrequencyX on RepeatFrequency {
         return 'Monthly';
       case RepeatFrequency.yearly:
         return 'Yearly';
+    }
+  }
+
+  DateTime calculateNext(DateTime base) {
+    final dateOnly = DateTime(base.year, base.month, base.day);
+    switch (this) {
+      case RepeatFrequency.daily:
+        return dateOnly.add(const Duration(days: 1));
+      case RepeatFrequency.weekly:
+        return dateOnly.add(const Duration(days: 7));
+      case RepeatFrequency.monthly:
+        return DateTime(dateOnly.year, dateOnly.month + 1, dateOnly.day);
+      case RepeatFrequency.yearly:
+        return DateTime(dateOnly.year + 1, dateOnly.month, dateOnly.day);
+      case RepeatFrequency.none:
+        return dateOnly;
     }
   }
 }

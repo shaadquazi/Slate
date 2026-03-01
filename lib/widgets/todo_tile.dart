@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:slate/constants/app_strings.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
@@ -113,7 +113,7 @@ class _TodoContentState extends State<_TodoContent> {
       child: Text(
         date == null ? '' : _dateFormat.format(date),
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.8),
+              color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
               fontSize: 12,
             ),
       ),
@@ -122,6 +122,7 @@ class _TodoContentState extends State<_TodoContent> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final desc = widget.todo.description;
     final hasDescription = desc.trim().isNotEmpty;
     final trailing = _buildTrailingDate(context);
@@ -158,7 +159,7 @@ class _TodoContentState extends State<_TodoContent> {
                 GestureDetector(
                   onTap: () => setState(() => expanded = false),
                   child: Text(
-                    TodoTileStrings.less,
+                    l10n.less,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 12,
@@ -185,7 +186,7 @@ class _TodoContentState extends State<_TodoContent> {
                       child: GestureDetector(
                         onTap: () => setState(() => expanded = true),
                         child: Text(
-                          TodoTileStrings.more,
+                          l10n.more,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontSize: 12,

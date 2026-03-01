@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:slate/constants/app_strings.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 class OptionalDescriptionField extends StatefulWidget {
   final TextEditingController controller;
 
-  const OptionalDescriptionField({super.key, required this.controller});
+  const OptionalDescriptionField({
+    super.key,
+    required this.controller,
+  });
 
   @override
   State<OptionalDescriptionField> createState() =>
@@ -12,67 +15,47 @@ class OptionalDescriptionField extends StatefulWidget {
 }
 
 class _OptionalDescriptionFieldState extends State<OptionalDescriptionField> {
-  bool isExpanded = false;
+  bool _showField = false;
 
   @override
   void initState() {
     super.initState();
-    isExpanded = widget.controller.text.trim().isNotEmpty;
+    _showField = widget.controller.text.isNotEmpty;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, // left align everything
-      children: [
-        // "Add description" button
-        if (!isExpanded)
-          Align(
-            alignment: Alignment.centerLeft, // ensures left alignment
-            child: TextButton.icon(
-              onPressed: () => setState(() => isExpanded = true),
-              icon: const Icon(Icons.add, size: 20),
-              label: const Text(
-                LabelStrings.addDescription,
-                style: TextStyle(fontSize: 16),
-              ),
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero, // remove default padding
-                minimumSize: const Size(0, 0), // shrink button
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                alignment: Alignment.centerLeft, // make icon+text flush left
-              ),
-            ),
+    final l10n = AppLocalizations.of(context)!;
+    if (!_showField) {
+      return OutlinedButton.icon(
+        onPressed: () => setState(() => _showField = true),
+        icon: const Icon(Icons.add, size: 18),
+        label: Text(l10n.addDescription),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
           ),
-        // TextFormField when expanded
-        if (isExpanded)
-          TextFormField(
-            controller: widget.controller,
-            keyboardType: TextInputType.multiline,
-            textInputAction: TextInputAction.newline,
-            minLines: 3,
-            maxLines: null,
-            expands: false,
-            decoration: InputDecoration(
-              labelText: LabelStrings.description,
-              alignLabelWithHint: true,
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () {
-                  setState(() {
-                    isExpanded = false;
-                    widget.controller.clear();
-                  });
-                },
-              ),
-            ),
-          ),
-      ],
+        ),
+      );
+    }
+
+    return TextFormField(
+      controller: widget.controller,
+      maxLines: 3,
+      minLines: 1,
+      decoration: InputDecoration(
+        labelText: l10n.description,
+        hintText: l10n.addDescription,
+        alignLabelWithHint: true,
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.close, size: 18),
+          onPressed: () {
+            widget.controller.clear();
+            setState(() => _showField = false);
+          },
+        ),
+      ),
     );
   }
 }

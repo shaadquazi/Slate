@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slate/constants/app_strings.dart';
 import 'package:slate/models/todo.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 import '../providers/todo_provider.dart';
 
@@ -11,32 +11,33 @@ class HomeFilters extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TodoProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.all(6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _FilterDropdownButton<RepeatFrequency>(
-            label: LabelStrings.repeat,
-            options: TodoProvider.repeatFilterOptions,
-            optionLabel: (r) => r.label,
-            selected: provider.repeatFilters,
-            isAllSelected: provider.repeatFilters.isEmpty ||
-                provider.repeatFilters.length ==
-                    TodoProvider.repeatFilterOptions.length,
-            onToggle: provider.toggleRepeatFilter,
-            selectedFromProvider: (p) => p.repeatFilters as Set<RepeatFrequency>,
+          _FilterDropdownButton<DateFilter>(
+            label: l10n.due,
+            options: TodoProvider.dateFilterOptions,
+            optionLabel: (d) => d.label,
+            selected: provider.dateFilters,
+            isAllSelected: provider.dateFilters.isEmpty ||
+                provider.dateFilters.length ==
+                    TodoProvider.dateFilterOptions.length,
+            onToggle: provider.toggleDateFilter,
+            selectedFromProvider: (p) => p.dateFilters,
           ),
           _FilterDropdownButton<Status>(
-            label: LabelStrings.status,
+            label: l10n.status,
             options: Status.values,
             optionLabel: (s) => s.label,
             selected: provider.statusFilters,
             isAllSelected: provider.statusFilters.isEmpty ||
                 provider.statusFilters.length == Status.values.length,
             onToggle: provider.toggleStatusFilter,
-            selectedFromProvider: (p) => p.statusFilters as Set<Status>,
+            selectedFromProvider: (p) => p.statusFilters,
           ),
         ],
       ),
@@ -63,8 +64,9 @@ class _FilterDropdownButton<T> extends StatelessWidget {
     required this.selectedFromProvider,
   });
 
-  String get _summary {
-    if (isAllSelected) return FilterStrings.all;
+  String _summary(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (isAllSelected) return l10n.all;
     final text = selected.map(optionLabel).join(', ');
     return text.length > 18 ? '${text.substring(0, 15)}...' : text;
   }
@@ -82,7 +84,7 @@ class _FilterDropdownButton<T> extends StatelessWidget {
           Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
           const SizedBox(width: 6),
           Text(
-            _summary,
+            _summary(context),
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontSize: 13,
@@ -127,10 +129,8 @@ class _FilterDropdownButton<T> extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Consumer<TodoProvider>(
-                builder: (_, provider, __) {
+                builder: (_, provider, _) {
                   final currentSelected = selectedFromProvider(provider);
-                  final allSelected = currentSelected.isEmpty ||
-                      currentSelected.length == options.length;
                   return Column(
                     children: [
                       for (final option in options)
@@ -140,16 +140,6 @@ class _FilterDropdownButton<T> extends StatelessWidget {
                           controlAffinity: ListTileControlAffinity.leading,
                           contentPadding: EdgeInsets.zero,
                           onChanged: (_) => onToggle(option),
-                        ),
-                      if (!allSelected)
-                        TextButton.icon(
-                          onPressed: () {
-                            for (final o in options) {
-                              if (!currentSelected.contains(o)) onToggle(o);
-                            }
-                          },
-                          icon: const Icon(Icons.check_box_outline_blank, size: 20),
-                          label: const Text(FilterStrings.selectAll),
                         ),
                     ],
                   );

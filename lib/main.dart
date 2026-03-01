@@ -3,24 +3,27 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:slate/constants/app_strings.dart';
 import 'package:slate/screens/error_app.dart';
 import 'package:slate/theme/app_theme.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 import 'models/todo.dart';
 import 'providers/todo_provider.dart';
+import 'repositories/todo_repository.dart';
+import 'services/todo_service.dart';
 import 'screens/home_screen.dart';
+import 'utils/logger.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    debugPrint('Flutter error: ${details.exception}');
-  };
-
   runZonedGuarded(
     () async {
+      WidgetsFlutterBinding.ensureInitialized();
+
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        logger.e('Flutter error: ${details.exception}', error: details.exception, stackTrace: details.stack);
+      };
+
       try {
         await Hive.initFlutter();
 
@@ -29,14 +32,31 @@ void main() async {
         Hive.registerAdapter(RepeatFrequencyAdapter());
 
         await Hive.openBox<Todo>('todos');
+        await Hive.openBox('settings');
 
-        runApp(const MyApp());
-      } catch (e) {
+        final repository = TodoRepository();
+        await repository.init();
+        final service = TodoService(repository);
+
+        runApp(
+          MultiProvider(
+            providers: [
+              Provider.value(value: repository),
+              Provider.value(value: service),
+              ChangeNotifierProvider(
+                create: (_) => TodoProvider(repository, service)..loadTodos(),
+              ),
+            ],
+            child: const MyApp(),
+          ),
+        );
+      } catch (e, stack) {
+        logger.e('Startup error', error: e, stackTrace: stack);
         runApp(const ErrorApp());
       }
     },
     (error, stack) {
-      debugPrint(error.toString());
+      logger.e('Unhandled error', error: error, stackTrace: stack);
     },
   );
 }
@@ -46,16 +66,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => TodoProvider()..loadTodos(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: AppStrings.appName,
-        theme: primaryTheme,
-        darkTheme: secondaryTheme,
-        themeMode: ThemeMode.dark,
-        home: const HomeScreen(),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
+      theme: primaryTheme,
+      darkTheme: secondaryTheme,
+      themeMode: ThemeMode.dark,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const HomeScreen(),
     );
   }
 }

@@ -1,18 +1,23 @@
+import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 import 'package:slate/widgets/image_picker_field.dart';
 
 class EditableImageField extends StatefulWidget {
   final bool isEdit;
   final Uint8List? initialBytes;
-  final ValueChanged<Uint8List?>? onChanged;
+  final String? initialImagePath;
+  final ValueChanged<Uint8List?> onChanged;
 
   const EditableImageField({
     super.key,
-    this.initialBytes,
-    this.onChanged,
     required this.isEdit,
+    this.initialBytes,
+    this.initialImagePath,
+    required this.onChanged,
   });
 
   @override
@@ -20,178 +25,147 @@ class EditableImageField extends StatefulWidget {
 }
 
 class _EditableImageFieldState extends State<EditableImageField> {
-  Uint8List? imageBytes;
+  Uint8List? _bytes;
 
   @override
   void initState() {
     super.initState();
-    imageBytes = widget.initialBytes;
+    _bytes = widget.initialBytes;
   }
 
-  // Pick image from gallery
-  Future<Uint8List?> pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? file = await picker.pickImage(source: ImageSource.gallery);
-    if (file != null) {
-      return await file.readAsBytes();
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() => _bytes = bytes);
+      widget.onChanged(bytes);
     }
-    return null;
   }
 
-  // Fullscreen image viewer
-  void showImagePopup(BuildContext context, Uint8List bytes) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierColor: Colors.black87, // dark background
-      builder: (context) {
-        return GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: SafeArea(
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Stack(
-                children: [
-                  Center(child: _ZoomableImage(bytes: bytes)),
-                  Positioned(
-                    top: 5,
-                    right: 10,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                      onPressed: () => Navigator.of(context).pop(),
+  void _removeImage() {
+    setState(() => _bytes = null);
+    widget.onChanged(null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? imageWidget;
+    if (_bytes != null) {
+      imageWidget = Image.memory(_bytes!, fit: BoxFit.cover);
+    } else if (widget.initialImagePath != null) {
+      imageWidget = Image.file(File(widget.initialImagePath!), fit: BoxFit.cover);
+    } else if (widget.initialBytes != null) {
+      imageWidget = Image.memory(widget.initialBytes!, fit: BoxFit.cover);
+    }
+
+    if (imageWidget == null) {
+      return ImagePickerField(onChanged: (b) {
+        setState(() => _bytes = b);
+        widget.onChanged(b);
+      });
+    }
+
+    return Container(
+      height: 200,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => Dialog(
+                    insetPadding: EdgeInsets.zero,
+                    child: Stack(
+                      children: [
+                        InteractiveViewer(
+                          child: _bytes != null
+                              ? Image.memory(_bytes!)
+                              : widget.initialImagePath != null
+                                  ? Image.file(File(widget.initialImagePath!))
+                                  : widget.initialBytes != null
+                                      ? Image.memory(widget.initialBytes!)
+                                      : const SizedBox.shrink(),
+                        ),
+                        Positioned(
+                          top: 10,
+                          right: 10,
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                );
+              },
+              child: imageWidget,
             ),
-          ),
-        );
-      },
+            if (widget.isEdit)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.black54,
+                      child: IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.white),
+                        onPressed: () => _showPickerOptions(context),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    CircleAvatar(
+                      backgroundColor: Colors.black54,
+                      child: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.white),
+                        onPressed: _removeImage,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (imageBytes == null && widget.isEdit) {
-      return ImagePickerField(
-        initialBytes: imageBytes,
-        onChanged: (b) {
-          setState(() => imageBytes = b);
-          widget.onChanged?.call(b);
-        },
-      );
-    }
-
-    if (imageBytes != null) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  void _showPickerOptions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Wrap(
           children: [
-            // const Text('Photo', style: TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Stack(
-                children: [
-                  GestureDetector(
-                    onTap: () => showImagePopup(context, imageBytes!),
-                    child: Image.memory(
-                      imageBytes!,
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  if (widget.isEdit)
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: () async {
-                          final newBytes = await pickImage();
-                          if (newBytes != null) {
-                            setState(() => imageBytes = newBytes);
-                            widget.onChanged?.call(newBytes);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          margin: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.edit,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: Text(l10n.gallery),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(l10n.camera),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
             ),
           ],
         ),
-      );
-    }
-
-    return const SizedBox();
-  }
-}
-
-class _ZoomableImage extends StatefulWidget {
-  final Uint8List bytes;
-  const _ZoomableImage({required this.bytes});
-
-  @override
-  State<_ZoomableImage> createState() => _ZoomableImageState();
-}
-
-class _ZoomableImageState extends State<_ZoomableImage> {
-  late TransformationController _controller;
-  TapDownDetails? _doubleTapDetails;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TransformationController();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleDoubleTap() {
-    final position = _doubleTapDetails!.localPosition;
-    if (_controller.value != Matrix4.identity()) {
-      _controller.value = Matrix4.identity(); // reset zoom
-    } else {
-      _controller.value = Matrix4.identity()
-        ..translate(-position.dx * 2, -position.dy * 2)
-        ..scale(2.5);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTapDown: (details) => _doubleTapDetails = details,
-      onDoubleTap: _handleDoubleTap,
-      child: InteractiveViewer(
-        transformationController: _controller,
-        panEnabled: true,
-        minScale: 1,
-        maxScale: 4,
-        child: Image.memory(widget.bytes),
       ),
     );
   }

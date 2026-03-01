@@ -1,0 +1,66 @@
+{
+  "appName": "Slate",
+  "editTodo": "Edit Task",
+  "addTodo": "Add Task",
+  "save": "Save",
+  "update": "Update",
+  "add": "Add",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "title": "Title",
+  "description": "Description",
+  "status": "Status",
+  "repeat": "Repeat",
+  "frequency": "Frequency",
+  "endDate": "End date",
+  "dueDate": "Due date",
+  "clearDueDate": "Clear due date",
+  "photo": "Photo",
+  "addDescription": "Add description",
+  "schedule": "Schedule",
+  "due": "Due",
+  "noTasks": "No tasks",
+  "emptyTitle": "Please enter a title",
+  "noEndDate": "No end date",
+  "noDueDate": "No due date",
+  "completedOnPrefix": "Completed on",
+  "notSet": "Not set",
+  "pending": "Pending",
+  "inProgress": "In Progress",
+  "completed": "Completed",
+  "none": "None",
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "today": "Today",
+  "thisWeek": "This week",
+  "thisMonth": "This month",
+  "thisYear": "This year",
+  "all": "All",
+  "selectAll": "Select all",
+  "clearCompletedTitle": "Clear completed tasks?",
+  "clearCompletedContent": "Delete {count} visible tasks?",
+  "@clearCompletedContent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearVisible": "Clear visible",
+  "more": "more",
+  "less": "less",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  "genericStartup": "Something went wrong. Please restart the app.",
+  "showLess": "Show less",
+  "showMore": "Show {count} more",
+  "@showMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

@@ -5,14 +5,14 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:slate/screens/editable_image_field.dart';
 import 'package:slate/widgets/image_picker_field.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 import 'package:slate/widgets/optional_description_field.dart';
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
-import '../constants/app_strings.dart';
 
 class AddEditScreen extends StatefulWidget {
-  final Todo? todo; // null = add, not null = edit
+  final Todo? todo;
 
   const AddEditScreen({super.key, this.todo});
 
@@ -24,13 +24,12 @@ class _AddEditScreenState extends State<AddEditScreen> {
   late TextEditingController titleCtrl;
   late TextEditingController descCtrl;
   late Status status;
-  // late RepeatFrequency repeat;
-  bool repeatEnabled = false;
-  RepeatFrequency repeat = RepeatFrequency.daily;
+  RepeatFrequency repeat = RepeatFrequency.none;
   DateTime? repeatEndDate;
   DateTime? completedOn;
   DateTime? dueDate;
   Uint8List? imageBytes;
+  String? initialImagePath;
 
   bool get isEdit => widget.todo != null;
 
@@ -43,12 +42,11 @@ class _AddEditScreenState extends State<AddEditScreen> {
     titleCtrl = TextEditingController(text: widget.todo?.title ?? '');
     descCtrl = TextEditingController(text: widget.todo?.description ?? '');
     status = widget.todo?.status ?? Status.inProgress;
-    repeatEnabled =
-        (widget.todo?.repeat ?? RepeatFrequency.none) != RepeatFrequency.none;
     repeat = widget.todo?.repeat ?? RepeatFrequency.none;
     repeatEndDate = widget.todo?.repeatEndDate;
     completedOn = widget.todo?.completedOn;
     dueDate = widget.todo?.dueDate;
+    initialImagePath = widget.todo?.imagePath;
     imageBytes = widget.todo?.imageBytes;
   }
 
@@ -57,11 +55,19 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
+    if (repeat == RepeatFrequency.none && repeatEndDate != null && dueDate == null) {
+      dueDate = repeatEndDate;
+    }
+
+    if (dueDate == null && repeatEndDate != null && repeat != RepeatFrequency.none) {
+      dueDate = DateUtils.dateOnly(DateTime.now()); 
+    }
+
     final provider = context.read<TodoProvider>();
 
     if (isEdit) {
       provider.updateTodo(
-        todo: widget.todo!,
+        widget.todo!,
         title: titleCtrl.text,
         description: descCtrl.text,
         status: status,
@@ -71,30 +77,89 @@ class _AddEditScreenState extends State<AddEditScreen> {
         dueDate: dueDate,
       );
     } else {
-      provider.addTodo(
-        Todo(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          title: titleCtrl.text,
-          description: descCtrl.text,
-          status: status,
-          repeat: repeatEnabled ? repeat : RepeatFrequency.none,
-          repeatEndDate: repeatEnabled ? repeatEndDate : null,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          imageBytes: imageBytes,
-          dueDate: dueDate,
-        ),
+      provider.createAndAddTodo(
+        title: titleCtrl.text,
+        description: descCtrl.text,
+        status: status,
+        repeat: repeat,
+        repeatEndDate: repeatEndDate,
+        imageBytes: imageBytes,
+        dueDate: dueDate,
       );
     }
 
     Navigator.pop(context);
   }
 
+  Future<void> _pickDate({
+    required DateTime? initialValue,
+    required DateTime firstDate,
+    required Function(DateTime) onPicked,
+  }) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialValue != null && !initialValue.isBefore(firstDate) 
+          ? initialValue 
+          : firstDate,
+      firstDate: firstDate,
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() => onPicked(picked));
+    }
+  }
+
+  Widget _buildDateField({
+    required String label,
+    required DateTime? value,
+    required IconData icon,
+    required VoidCallback onTap,
+    VoidCallback? onClear,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    return Expanded(
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: onTap,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: label,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: Icon(icon, size: 20),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                child: Text(
+                  value == null
+                      ? l10n.notSet
+                      : DateFormat.yMMMd().format(value),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ),
+            ),
+          ),
+          if (value != null)
+            IconButton(
+              icon: const Icon(Icons.clear, size: 20),
+              onPressed: onClear,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final now = DateUtils.dateOnly(DateTime.now());
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? AppStrings.editTodo : AppStrings.addTodo),
+        title: Text(isEdit ? l10n.editTodo : l10n.addTodo),
       ),
       body: Form(
         key: _formKey,
@@ -110,217 +175,115 @@ class _AddEditScreenState extends State<AddEditScreen> {
                   autofocus: !isEdit,
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _saveTodo(),
-                  decoration: const InputDecoration(
-                    labelText: LabelStrings.title,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return MsgStrings.emptyTitle;
-                    }
-                    return null;
-                  },
+                  decoration: InputDecoration(labelText: l10n.title),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? l10n.emptyTitle : null,
                 ),
                 const SizedBox(height: 16),
                 OptionalDescriptionField(controller: descCtrl),
                 const SizedBox(height: 16),
-                if (imageBytes == null) ...[
-                  ImagePickerField(
+                
+                if (imageBytes != null || initialImagePath != null) ...[
+                  Text(l10n.photo, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  EditableImageField(
+                    isEdit: true,
                     initialBytes: imageBytes,
-                    onChanged: (b) {
-                      setState(() => imageBytes = b);
-                    },
+                    initialImagePath: initialImagePath,
+                    onChanged: (b) => setState(() => imageBytes = b),
                   ),
-                ],
-                if (imageBytes != null)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          LabelStrings.photo,
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 8),
-                        EditableImageField(
-                          isEdit: isEdit ? true : imageBytes != null,
-                          initialBytes: imageBytes,
-                          onChanged: (b) {
-                            setState(() => imageBytes = b);
-                          },
-                        ),
-                      ],
+                ] else
+                  ImagePickerField(onChanged: (b) => setState(() => imageBytes = b)),
+                
+                const SizedBox(height: 24),
+                Text(l10n.schedule, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                const SizedBox(height: 12),
+                
+                Row(
+                  children: [
+                    _buildDateField(
+                      label: l10n.dueDate,
+                      value: dueDate,
+                      icon: Icons.calendar_today,
+                      onTap: () => _pickDate(
+                        initialValue: dueDate,
+                        firstDate: now,
+                        onPicked: (d) => setState(() {
+                          dueDate = d;
+                          if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
+                            repeatEndDate = dueDate;
+                          }
+                        }),
+                      ),
+                      onClear: () => setState(() => dueDate = null),
                     ),
-                  ),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: dueDate ?? DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                          );
-                          if (picked != null) setState(() => dueDate = picked);
-                        },
-                        child: InputDecorator(
-                          decoration: const InputDecoration(
-                            labelText: LabelStrings.dueDate,
-                            border: OutlineInputBorder(),
-                          ),
-                          child: Text(
-                            dueDate == null
-                                ? MsgStrings.noDueDate
-                                : DateFormat.yMMMd().format(dueDate!),
-                          ),
-                        ),
+                      child: DropdownMenu<RepeatFrequency>(
+                        expandedInsets: EdgeInsets.zero,
+                        label: Text(l10n.frequency),
+                        initialSelection: repeat,
+                        onSelected: (v) => setState(() => repeat = v!),
+                        dropdownMenuEntries: RepeatFrequency.values
+                            .map((r) => DropdownMenuEntry(value: r, label: r.label))
+                            .toList(),
                       ),
                     ),
-                    if (dueDate != null)
-                      IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => setState(() => dueDate = null),
-                        tooltip: LabelStrings.clearDueDate,
+                    const SizedBox(width: 12),
+                    _buildDateField(
+                      label: l10n.endDate,
+                      value: repeatEndDate,
+                      icon: Icons.event_available,
+                      onTap: () => _pickDate(
+                        initialValue: repeatEndDate,
+                        firstDate: dueDate ?? now,
+                        onPicked: (d) => setState(() => repeatEndDate = d),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        LabelStrings.repeat,
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      value: repeatEnabled,
-                      onChanged: (v) {
-                        setState(() {
-                          repeatEnabled = v;
-
-                          if (!v) {
-                            repeat = RepeatFrequency.none;
-                            repeatEndDate = null;
-                          }
-                        });
-                      },
+                      onClear: () => setState(() => repeatEndDate = null),
                     ),
-                    if (repeatEnabled) ...[
-                      const SizedBox(height: 12),
-
-                      Row(
-                        children: [
-                          /// Frequency dropdown
-                          Expanded(
-                            child: DropdownMenu<RepeatFrequency>(
-                              label: const Text(LabelStrings.frequency),
-                              initialSelection: repeat,
-                              onSelected: (v) => setState(() => repeat = v!),
-                              dropdownMenuEntries: RepeatFrequency.values
-                                  .where((r) => r != RepeatFrequency.none)
-                                  .map(
-                                    (r) => DropdownMenuEntry(
-                                      value: r,
-                                      label: r.label,
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          /// End date picker
-                          Expanded(
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () async {
-                                final picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: repeatEndDate ?? DateTime.now(),
-                                  firstDate: DateTime.now(),
-                                  lastDate: DateTime(2100),
-                                );
-
-                                if (picked != null) {
-                                  setState(() => repeatEndDate = picked);
-                                }
-                              },
-                              child: InputDecorator(
-                                decoration: const InputDecoration(
-                                  labelText: LabelStrings.endDate,
-                                  border: OutlineInputBorder(),
-                                ),
-                                child: Text(
-                                  repeatEndDate == null
-                                      ? MsgStrings.noEndDate
-                                      : DateFormat.yMMMd().format(
-                                          repeatEndDate!,
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
+                
                 if (isEdit) ...[
-                  const SizedBox(height: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        LabelStrings.status,
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: Status.values.map((s) {
-                            final selected = status == s;
-                            return ChoiceChip(
-                              label: Text(s.label),
-                              selected: selected,
-                              showCheckmark: false,
-                              selectedColor: Theme.of(
-                                context,
-                              ).colorScheme.primaryContainer,
-                              onSelected: (_) => setState(() => status = s),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 24),
+                  Text(l10n.status, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: Status.values.map((s) => ChoiceChip(
+                        label: Text(s.label),
+                        selected: status == s,
+                        showCheckmark: false,
+                        onSelected: (_) => setState(() => status = s),
+                      )).toList(),
+                    ),
                   ),
-                  const SizedBox(height: 16),
                   if (status == Status.completed && completedOn != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        '${MsgStrings.completedOnPrefix} ${DateFormat.yMMMd().add_jm().format(completedOn!)}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        '${l10n.completedOnPrefix} ${DateFormat.yMMMd().add_jm().format(completedOn!)}',
+                        style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
                       ),
                     ),
                 ],
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.end, // aligns children to the right
-                  children: [
-                    ElevatedButton(
-                      onPressed: _saveTodo,
-                      child: Text(isEdit ? BtnStrings.update : BtnStrings.save),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     ),
-                  ],
+                    onPressed: _saveTodo,
+                    child: Text(isEdit ? l10n.update : l10n.save, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
                 ),
               ],
             ),

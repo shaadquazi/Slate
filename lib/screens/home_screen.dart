@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:slate/constants/app_strings.dart';
 import 'package:slate/models/todo.dart';
+import 'package:slate/l10n/generated/app_localizations.dart';
 
 import '../providers/todo_provider.dart';
 import '../widgets/home_filters.dart';
@@ -14,12 +14,13 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TodoProvider>();
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          AppStrings.appName,
-          style: TextStyle(fontWeight: FontWeight.w700),
+        title: Text(
+          l10n.appName,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
 
@@ -45,7 +46,7 @@ class HomeScreen extends StatelessWidget {
                 final completed = provider.completedTodos;
 
                 if (pending.isEmpty && current.isEmpty && completed.isEmpty) {
-                  return const Center(child: Text(MsgStrings.noTasks));
+                  return Center(child: Text(l10n.noTasks));
                 }
 
                 final singleStatusFilter = provider.statusFilters.length == 1;
