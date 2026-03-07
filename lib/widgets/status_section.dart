@@ -9,15 +9,15 @@ import 'todo_tile.dart';
 class StatusSection extends StatefulWidget {
   final Status status;
   final List<Todo> todos;
-  /// When true, show all tasks (no "show more" limit). Use when a single
-  /// status filter is selected.
   final bool expandAll;
+  final VoidCallback? onNavigate;
 
   const StatusSection({
     super.key,
     required this.status,
     required this.todos,
     this.expandAll = false,
+    this.onNavigate,
   });
 
   @override
@@ -50,7 +50,7 @@ class _StatusSectionState extends State<StatusSection> {
           visibleTodos: widget.todos,
         ),
 
-        ...visibleTodos.map((t) => TodoTile(todo: t)),
+        ...visibleTodos.map((t) => TodoTile(todo: t, onNavigate: widget.onNavigate)),
 
         if (showMoreButton)
           TextButton(
@@ -95,7 +95,7 @@ class _StatusHeader extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  status.labelWithOptionalCount(count),
+                  status.labelWithOptionalCount(count, l10n),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -147,4 +147,3 @@ class _StatusHeader extends StatelessWidget {
     );
   }
 }
-

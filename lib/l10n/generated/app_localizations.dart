@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,7 +93,10 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('en')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('es'),
+  ];
 
   /// No description provided for @appName.
   ///
@@ -393,6 +397,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show {count} more'**
   String showMore(int count);
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get theme;
+
+  /// No description provided for @system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get system;
+
+  /// No description provided for @light.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get light;
+
+  /// No description provided for @dark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get dark;
+
+  /// No description provided for @personalization.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalization'**
+  String get personalization;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @spanish.
+  ///
+  /// In en, this message translates to:
+  /// **'Spanish'**
+  String get spanish;
+
+  /// No description provided for @dataManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Management'**
+  String get dataManagement;
+
+  /// No description provided for @resetApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete All Tasks'**
+  String get resetApp;
+
+  /// No description provided for @resetAppConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all active tasks?'**
+  String get resetAppConfirmTitle;
+
+  /// No description provided for @resetAppConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will move all your active tasks to the trash bin.'**
+  String get resetAppConfirmContent;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get reset;
+
+  /// No description provided for @trashBin.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash Bin'**
+  String get trashBin;
+
+  /// No description provided for @trashEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trash is empty'**
+  String get trashEmpty;
+
+  /// No description provided for @emptyTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty Trash'**
+  String get emptyTrash;
+
+  /// No description provided for @emptyTrashConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty trash bin?'**
+  String get emptyTrashConfirmTitle;
+
+  /// No description provided for @emptyTrashConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete all items in the trash. This action cannot be undone.'**
+  String get emptyTrashConfirmContent;
+
+  /// No description provided for @restoreTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Task?'**
+  String get restoreTaskTitle;
+
+  /// No description provided for @restoreTaskContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to move this task back to your active list?'**
+  String get restoreTaskContent;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @permanentDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Permanently'**
+  String get permanentDelete;
+
+  /// No description provided for @deletedAtPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted on'**
+  String get deletedAtPrefix;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search...'**
+  String get search;
+
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching tasks found'**
+  String get noResults;
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @clearFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Filters'**
+  String get clearFilters;
+
+  /// No description provided for @exportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Tasks'**
+  String get exportData;
+
+  /// No description provided for @importData.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Tasks'**
+  String get importData;
+
+  /// No description provided for @importConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Tasks?'**
+  String get importConfirmTitle;
+
+  /// No description provided for @importConfirmContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This will merge {count} tasks from the backup into your current list. Continue?'**
+  String importConfirmContent(int count);
+
+  /// No description provided for @importSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data restored successfully'**
+  String get importSuccess;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data exported successfully'**
+  String get exportSuccess;
+
+  /// No description provided for @invalidFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid backup file'**
+  String get invalidFile;
 }
 
 class _AppLocalizationsDelegate
@@ -406,7 +620,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en'].contains(locale.languageCode);
+      <String>['en', 'es'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -417,6 +631,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
   }
 
   throw FlutterError(

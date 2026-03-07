@@ -1,25 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../models/todo.dart';
 import '../repositories/todo_repository.dart';
 import '../services/todo_service.dart';
-
-enum DateFilter { daily, weekly, monthly, yearly }
-
-extension DateFilterX on DateFilter {
-  String get label {
-    switch (this) {
-      case DateFilter.daily:
-        return 'Today';
-      case DateFilter.weekly:
-        return 'This week';
-      case DateFilter.monthly:
-        return 'This month';
-      case DateFilter.yearly:
-        return 'This year';
-    }
-  }
-}
+import '../constants/app_constants.dart';
+import '../utils/logger.dart';
 
 class TodoProvider extends ChangeNotifier {
   final TodoRepository _repository;
@@ -27,14 +13,21 @@ class TodoProvider extends ChangeNotifier {
 
   TodoProvider(this._repository, this._service);
 
-  static const String statusFiltersKey = 'status_filters';
-  static const String dateFiltersKey = 'date_filters';
-
   Set<Status> _statusFilters = {};
   Set<DateFilter> _dateFilters = {};
+  ThemeMode _themeMode = ThemeMode.system;
+  Locale? _locale;
+  String _appVersion = '';
+  String _searchQuery = '';
 
   Set<Status> get statusFilters => Set.from(_statusFilters);
   Set<DateFilter> get dateFilters => Set.from(_dateFilters);
+  ThemeMode get themeMode => _themeMode;
+  Locale? get locale => _locale;
+  String get appVersion => _appVersion;
+  String get searchQuery => _searchQuery;
+
+  bool get isFilterActive => _statusFilters.isNotEmpty || _dateFilters.isNotEmpty;
 
   static const List<DateFilter> dateFilterOptions = DateFilter.values;
 
@@ -49,6 +42,30 @@ class TodoProvider extends ChangeNotifier {
   void setDateFilters(Set<DateFilter> value) {
     _dateFilters = Set.from(value);
     _saveSettings();
+    notifyListeners();
+  }
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  void clearAllFilters() {
+    _statusFilters = {};
+    _dateFilters = {};
+    _saveSettings();
+    notifyListeners();
+  }
+
+  void setThemeMode(ThemeMode mode) {
+    _themeMode = mode;
+    _repository.saveSettings(AppConstants.themeModeKey, mode.index);
+    notifyListeners();
+  }
+
+  void setLocale(Locale? locale) {
+    _locale = locale;
+    _repository.saveSettings(AppConstants.localeKey, locale?.languageCode);
     notifyListeners();
   }
 
@@ -77,6 +94,7 @@ class TodoProvider extends ChangeNotifier {
       allTodos: _todos,
       statusFilters: _statusFilters,
       dateFilters: _dateFilters,
+      searchQuery: _searchQuery,
     );
   }
 
@@ -98,11 +116,24 @@ class TodoProvider extends ChangeNotifier {
   List<Todo> get pendingTodos => _sort(_filtered.where((t) => t.status == Status.pending).toList());
   List<Todo> get currentTodos => _sort(_filtered.where((t) => t.status == Status.inProgress).toList());
   List<Todo> get completedTodos => _sort(_filtered.where((t) => t.status == Status.completed).toList());
+  List<Todo> get trashedTodos => _service.getTrashedTodos(_todos);
 
   Future<void> loadTodos() async {
     _todos = _repository.getAllTodos();
     _loadSettings();
+    await _loadAppInfo();
+    await _service.autoCleanupTrash(_todos);
+    _todos = _repository.getAllTodos(); 
     notifyListeners();
+  }
+
+  Future<void> _loadAppInfo() async {
+    try {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      _appVersion = 'Version ${packageInfo.version} (${packageInfo.buildNumber})';
+    } catch (e) {
+      logger.e('Error loading app version', error: e);
+    }
   }
 
   Future<void> addTodo(Todo todo) async {
@@ -132,17 +163,36 @@ class TodoProvider extends ChangeNotifier {
     await addTodo(todo);
   }
 
-  Future<void> deleteTodo(Todo todo) async {
-    await _repository.deleteTodo(todo);
+  Future<void> trashTodo(Todo todo) async {
+    await _service.trashTodo(todo);
+    notifyListeners();
+  }
+
+  Future<void> restoreTodo(Todo todo) async {
+    await _service.restoreTodo(todo);
+    notifyListeners();
+  }
+
+  Future<void> permanentDeleteTodo(Todo todo) async {
+    await _service.permanentDeleteTodo(todo);
     _todos.remove(todo);
     notifyListeners();
   }
 
+  Future<void> emptyTrash() async {
+    await _service.emptyTrash(_todos);
+    _todos.removeWhere((t) => t.isDeleted);
+    notifyListeners();
+  }
+
+  Future<void> deleteTodo(Todo todo) async {
+    await trashTodo(todo);
+  }
+
   Future<void> deleteTodos(List<Todo> todos) async {
     for (final t in todos) {
-      await _repository.deleteTodo(t);
+      await trashTodo(t);
     }
-    _todos.removeWhere((t) => todos.contains(t));
     notifyListeners();
   }
 
@@ -171,28 +221,90 @@ class TodoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> toggleMarkdownCheckbox(Todo todo, String text, bool checked) async {
+    if (text.trim().isEmpty) return;
+    final lines = todo.description.split('\n');
+    final escapedText = RegExp.escape(text.trim());
+    
+    final regex = RegExp(r'^\s*[-*]\s+\[[ xX]\]\s+' + escapedText + r'\s*$');
+
+    for (int i = 0; i < lines.length; i++) {
+      if (regex.hasMatch(lines[i])) {
+        final replacement = checked ? 'x' : ' ';
+        lines[i] = lines[i].replaceFirst(RegExp(r'\[[ xX]\]'), '[$replacement]');
+        break;
+      }
+    }
+    await updateTodo(todo, description: lines.join('\n'));
+  }
+
   Future<void> updateStatus(Todo todo, Status status) async {
     await updateTodo(todo, status: status);
   }
 
   void _saveSettings() {
-    _repository.saveSettings(statusFiltersKey, _statusFilters.map((s) => s.index).toList());
-    _repository.saveSettings(dateFiltersKey, _dateFilters.map((d) => d.index).toList());
+    _repository.saveSettings(AppConstants.statusFiltersKey, _statusFilters.map((s) => s.index).toList());
+    _repository.saveSettings(AppConstants.dateFiltersKey, _dateFilters.map((d) => d.index).toList());
   }
 
   void _loadSettings() {
-    final statusIndices = _repository.getSetting(statusFiltersKey) as List?;
-    if (statusIndices != null) {
-      _statusFilters = statusIndices.map((i) => Status.values[i as int]).toSet();
-    }
-    final dateIndices = _repository.getSetting(dateFiltersKey) as List?;
-    if (dateIndices != null) {
-      _dateFilters = dateIndices.map((i) => DateFilter.values[i as int]).toSet();
+    try {
+      final statusIndices = _repository.getSetting(AppConstants.statusFiltersKey);
+      if (statusIndices is List) {
+        _statusFilters = statusIndices
+            .where((i) => i is int && i >= 0 && i < Status.values.length)
+            .map((i) => Status.values[i as int])
+            .toSet();
+      }
+
+      final dateIndices = _repository.getSetting(AppConstants.dateFiltersKey);
+      if (dateIndices is List) {
+        _dateFilters = dateIndices
+            .where((i) => i is int && i >= 0 && i < DateFilter.values.length)
+            .map((i) => DateFilter.values[i as int])
+            .toSet();
+      }
+
+      final themeIndex = _repository.getSetting(AppConstants.themeModeKey);
+      if (themeIndex is int && themeIndex >= 0 && themeIndex < ThemeMode.values.length) {
+        _themeMode = ThemeMode.values[themeIndex];
+      }
+
+      final langCode = _repository.getSetting(AppConstants.localeKey);
+      if (langCode is String) {
+        _locale = Locale(langCode);
+      }
+    } catch (e) {
+      logger.e('Error loading settings', error: e);
+      _statusFilters = {};
+      _dateFilters = {};
+      _themeMode = ThemeMode.system;
+      _locale = null;
     }
   }
 
   Future<void> clearCompleted() async {
     final completed = _todos.where((t) => t.status == Status.completed).toList();
     await deleteTodos(completed);
+  }
+
+  Future<void> resetApp() async {
+    for (final t in _todos) {
+      if (!t.isDeleted) {
+        await trashTodo(t);
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> exportData() async {
+    await _repository.exportData();
+  }
+
+  Future<int> importData(String jsonString) async {
+    final count = await _repository.importData(jsonString);
+    _todos = _repository.getAllTodos();
+    notifyListeners();
+    return count;
   }
 }

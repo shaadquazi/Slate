@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Primary theme (light). App bar and scaffold share the same surface.
 ThemeData get primaryTheme {
   const surface = Color(0xFFFAFAFA);
   final colorScheme = ColorScheme.fromSeed(
@@ -23,7 +22,6 @@ ThemeData get primaryTheme {
   );
 }
 
-/// Secondary theme (dark). App bar and scaffold share the same surface.
 ThemeData get secondaryTheme {
   const surface = Color(0xFF121212);
   final colorScheme = ColorScheme.fromSeed(

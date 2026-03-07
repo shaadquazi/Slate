@@ -34,12 +34,12 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
     final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: () => _showPickerOptions(context),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         height: 100,
-        width: double.infinity,
+        width: 100,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Theme.of(context).dividerColor,
             style: BorderStyle.solid,
@@ -52,7 +52,7 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
               Icons.add_a_photo_outlined,
               color: Theme.of(context).colorScheme.outline,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             Text(
               l10n.photo,
               style: TextStyle(

@@ -62,5 +62,47 @@
         "type": "int"
       }
     }
-  }
+  },
+  "settings": "Settings",
+  "theme": "Appearance",
+  "system": "System",
+  "light": "Light",
+  "dark": "Dark",
+  "personalization": "Personalization",
+  "language": "Language",
+  "english": "English",
+  "spanish": "Spanish",
+  "dataManagement": "Data Management",
+  "resetApp": "Delete All Tasks",
+  "resetAppConfirmTitle": "Delete all active tasks?",
+  "resetAppConfirmContent": "This will move all your active tasks to the trash bin.",
+  "reset": "Delete",
+  "trashBin": "Trash Bin",
+  "trashEmpty": "Your trash is empty",
+  "emptyTrash": "Empty Trash",
+  "emptyTrashConfirmTitle": "Empty trash bin?",
+  "emptyTrashConfirmContent": "This will permanently delete all items in the trash. This action cannot be undone.",
+  "restoreTaskTitle": "Restore Task?",
+  "restoreTaskContent": "Do you want to move this task back to your active list?",
+  "restore": "Restore",
+  "permanentDelete": "Delete Permanently",
+  "deletedAtPrefix": "Deleted on",
+  "search": "Search...",
+  "noResults": "No matching tasks found",
+  "filters": "Filters",
+  "clearFilters": "Clear Filters",
+  "exportData": "Export Tasks",
+  "importData": "Restore Tasks",
+  "importConfirmTitle": "Restore Tasks?",
+  "importConfirmContent": "This will merge {count} tasks from the backup into your current list. Continue?",
+  "@importConfirmContent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSuccess": "Data restored successfully",
+  "exportSuccess": "Data exported successfully",
+  "invalidFile": "Invalid backup file"
 }

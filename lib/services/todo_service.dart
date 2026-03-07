@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import '../models/todo.dart';
 import '../repositories/todo_repository.dart';
-import '../providers/todo_provider.dart';
 import 'package:flutter/material.dart';
 
 class TodoService {
@@ -13,16 +12,34 @@ class TodoService {
     required List<Todo> allTodos,
     required Set<Status> statusFilters,
     required Set<DateFilter> dateFilters,
+    String searchQuery = '',
   }) {
     final statusFilterIsAll = statusFilters.isEmpty || statusFilters.length == Status.values.length;
     final dateFilterOptions = DateFilter.values;
     final dateFilterIsAll = dateFilters.isEmpty || dateFilters.length == dateFilterOptions.length;
 
+    final query = searchQuery.trim().toLowerCase();
+
     return allTodos.where((t) {
+      if (t.isDeleted) return false;
       final statusMatch = statusFilterIsAll || statusFilters.contains(t.status);
       final dateMatch = _matchesDateFilter(t, dateFilters, dateFilterIsAll);
-      return statusMatch && dateMatch;
+      
+      bool searchMatch = true;
+      if (query.isNotEmpty) {
+        searchMatch = t.title.toLowerCase().contains(query) || 
+                      t.description.toLowerCase().contains(query);
+      }
+
+      return statusMatch && dateMatch && searchMatch;
     }).toList();
+  }
+
+  List<Todo> getTrashedTodos(List<Todo> allTodos) {
+    return allTodos
+        .where((t) => t.isDeleted)
+        .toList()
+      ..sort((a, b) => (b.deletedAt ?? DateTime.now()).compareTo(a.deletedAt ?? DateTime.now()));
   }
 
   bool _matchesDateFilter(Todo t, Set<DateFilter> dateFilters, bool isAll) {
@@ -36,22 +53,19 @@ class TodoService {
     for (final filter in dateFilters) {
       switch (filter) {
         case DateFilter.daily:
-          if (DateUtils.isSameDay(due, today)) return true;
+          if (!due.isAfter(today)) return true;
         case DateFilter.weekly:
-          if (_isSameWeek(due, today)) return true;
+          final lastDayOfWeek = today.add(Duration(days: 7 - today.weekday));
+          if (!due.isAfter(lastDayOfWeek)) return true;
         case DateFilter.monthly:
-          if (due.year == today.year && due.month == today.month) return true;
+          final lastDayOfMonth = DateTime(today.year, today.month + 1, 0);
+          if (!due.isAfter(lastDayOfMonth)) return true;
         case DateFilter.yearly:
-          if (due.year == today.year) return true;
+          final lastDayOfYear = DateTime(today.year, 12, 31);
+          if (!due.isAfter(lastDayOfYear)) return true;
       }
     }
     return false;
-  }
-
-  bool _isSameWeek(DateTime date, DateTime now) {
-    final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    final lastDayOfWeek = firstDayOfWeek.add(const Duration(days: 6));
-    return !date.isBefore(firstDayOfWeek) && !date.isAfter(lastDayOfWeek);
   }
 
   Future<Todo> createTodo({
@@ -162,5 +176,39 @@ class TodoService {
     );
 
     await _repository.saveTodo(newTodo);
+  }
+
+  Future<void> trashTodo(Todo todo) async {
+    todo.isDeleted = true;
+    todo.deletedAt = DateTime.now();
+    await _repository.saveTodo(todo);
+  }
+
+  Future<void> restoreTodo(Todo todo) async {
+    todo.isDeleted = false;
+    todo.deletedAt = null;
+    await _repository.saveTodo(todo);
+  }
+
+  Future<void> permanentDeleteTodo(Todo todo) async {
+    await _repository.deleteTodo(todo);
+  }
+
+  Future<void> emptyTrash(List<Todo> allTodos) async {
+    final trashed = allTodos.where((t) => t.isDeleted).toList();
+    for (final t in trashed) {
+      await _repository.deleteTodo(t);
+    }
+  }
+
+  Future<void> autoCleanupTrash(List<Todo> allTodos) async {
+    final thirtyDaysAgo = DateTime.now().subtract(const Duration(days: 30));
+    final toCleanup = allTodos.where((t) {
+      return t.isDeleted && t.deletedAt != null && t.deletedAt!.isBefore(thirtyDaysAgo);
+    }).toList();
+
+    for (final t in toCleanup) {
+      await _repository.deleteTodo(t);
+    }
   }
 }

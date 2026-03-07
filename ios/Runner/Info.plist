@@ -46,8 +46,12 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to take task photos</string>
+	<string>Slate needs camera access to take new photos for your tasks.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs photo library access to select task photos</string>
+	<string>Slate needs access to your gallery to attach existing photos to tasks.</string>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>

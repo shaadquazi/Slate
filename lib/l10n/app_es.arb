@@ -1,0 +1,108 @@
+{
+  "appName": "Slate",
+  "editTodo": "Editar Tarea",
+  "addTodo": "Añadir Tarea",
+  "save": "Guardar",
+  "update": "Actualizar",
+  "add": "Añadir",
+  "delete": "Eliminar",
+  "cancel": "Cancelar",
+  "title": "Título",
+  "description": "Descripción",
+  "status": "Estado",
+  "repeat": "Repetir",
+  "frequency": "Frecuencia",
+  "endDate": "Fecha de finalización",
+  "dueDate": "Fecha de vencimiento",
+  "clearDueDate": "Borrar fecha de vencimiento",
+  "photo": "Foto",
+  "addDescription": "Añadir descripción",
+  "schedule": "Horario",
+  "due": "Vence",
+  "noTasks": "Sin tareas",
+  "emptyTitle": "Por favor, introduce un título",
+  "noEndDate": "Sin fecha de finalización",
+  "noDueDate": "Sin fecha de vencimiento",
+  "completedOnPrefix": "Completado el",
+  "notSet": "No establecido",
+  "pending": "Pendiente",
+  "inProgress": "En progreso",
+  "completed": "Completado",
+  "none": "Ninguno",
+  "daily": "Diario",
+  "weekly": "Semanal",
+  "monthly": "Mensual",
+  "yearly": "Anual",
+  "today": "Hoy",
+  "thisWeek": "Esta semana",
+  "thisMonth": "Este mes",
+  "thisYear": "Este año",
+  "all": "Todo",
+  "selectAll": "Seleccionar todo",
+  "clearCompletedTitle": "¿Borrar tareas completadas?",
+  "clearCompletedContent": "¿Eliminar {count} tareas visibles?",
+  "@clearCompletedContent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearVisible": "Borrar visibles",
+  "more": "más",
+  "less": "menos",
+  "camera": "Cámara",
+  "gallery": "Galería",
+  "genericStartup": "Algo salió mal. Por favor, reinicia la aplicación.",
+  "showLess": "Mostrar menos",
+  "showMore": "Mostrar {count} más",
+  "@showMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings": "Ajustes",
+  "theme": "Apariencia",
+  "system": "Sistema",
+  "light": "Claro",
+  "dark": "Oscuro",
+  "personalization": "Personalización",
+  "language": "Idioma",
+  "english": "Inglés",
+  "spanish": "Español",
+  "dataManagement": "Gestión de datos",
+  "resetApp": "Eliminar todas las tareas",
+  "resetAppConfirmTitle": "¿Eliminar todas las tareas activas?",
+  "resetAppConfirmContent": "Esto moverá todas tus tareas activas a la papelera.",
+  "reset": "Eliminar",
+  "trashBin": "Papelera",
+  "trashEmpty": "Tu papelera está vacía",
+  "emptyTrash": "Vaciar papelera",
+  "emptyTrashConfirmTitle": "¿Vaciar papelera?",
+  "emptyTrashConfirmContent": "Esto eliminará permanentemente todos los elementos de la papelera. Esta acción no se puede deshacer.",
+  "restoreTaskTitle": "¿Restaurar tarea?",
+  "restoreTaskContent": "¿Quieres mover esta tarea de nuevo a tu lista activa?",
+  "restore": "Restaurar",
+  "permanentDelete": "Eliminar permanentemente",
+  "deletedAtPrefix": "Eliminado el",
+  "search": "Buscar...",
+  "noResults": "No se encontraron tareas que coincidan",
+  "filters": "Filtros",
+  "clearFilters": "Limpiar Filtros",
+  "exportData": "Exportar tareas",
+  "importData": "Restaurar tareas",
+  "importConfirmTitle": "¿Restaurar tareas?",
+  "importConfirmContent": "Esto fusionará {count} tareas de la copia de seguridad en tu lista actual. ¿Continuar?",
+  "@importConfirmContent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSuccess": "Datos restaurados con éxito",
+  "exportSuccess": "Datos exportados con éxito",
+  "invalidFile": "Archivo de copia de seguridad no válido"
+}

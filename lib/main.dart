@@ -5,16 +5,17 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:slate/screens/error_app.dart';
 import 'package:slate/theme/app_theme.dart';
+import 'package:slate/utils/logger.dart';
 import 'package:slate/l10n/generated/app_localizations.dart';
 
 import 'models/todo.dart';
 import 'providers/todo_provider.dart';
 import 'repositories/todo_repository.dart';
 import 'services/todo_service.dart';
+import 'constants/app_constants.dart';
 import 'screens/home_screen.dart';
-import 'utils/logger.dart';
 
-void main() async {
+void main() {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
@@ -31,11 +32,10 @@ void main() async {
         Hive.registerAdapter(StatusAdapter());
         Hive.registerAdapter(RepeatFrequencyAdapter());
 
-        await Hive.openBox<Todo>('todos');
-        await Hive.openBox('settings');
+        final todoBox = await Hive.openBox<Todo>(AppConstants.todoBoxName);
+        final settingsBox = await Hive.openBox(AppConstants.settingsBoxName);
 
-        final repository = TodoRepository();
-        await repository.init();
+        final repository = TodoRepository(todoBox, settingsBox);
         final service = TodoService(repository);
 
         runApp(
@@ -66,14 +66,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<TodoProvider>();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
       theme: primaryTheme,
       darkTheme: secondaryTheme,
-      themeMode: ThemeMode.dark,
+      themeMode: provider.themeMode,
+      locale: provider.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: const [
+        Locale('en'),
+        Locale('es'),
+      ],
       home: const HomeScreen(),
     );
   }

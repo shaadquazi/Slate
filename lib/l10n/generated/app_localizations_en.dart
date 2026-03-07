@@ -161,4 +161,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String showMore(int count) {
     return 'Show $count more';
   }
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get theme => 'Appearance';
+
+  @override
+  String get system => 'System';
+
+  @override
+  String get light => 'Light';
+
+  @override
+  String get dark => 'Dark';
+
+  @override
+  String get personalization => 'Personalization';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get spanish => 'Spanish';
+
+  @override
+  String get dataManagement => 'Data Management';
+
+  @override
+  String get resetApp => 'Delete All Tasks';
+
+  @override
+  String get resetAppConfirmTitle => 'Delete all active tasks?';
+
+  @override
+  String get resetAppConfirmContent =>
+      'This will move all your active tasks to the trash bin.';
+
+  @override
+  String get reset => 'Delete';
+
+  @override
+  String get trashBin => 'Trash Bin';
+
+  @override
+  String get trashEmpty => 'Your trash is empty';
+
+  @override
+  String get emptyTrash => 'Empty Trash';
+
+  @override
+  String get emptyTrashConfirmTitle => 'Empty trash bin?';
+
+  @override
+  String get emptyTrashConfirmContent =>
+      'This will permanently delete all items in the trash. This action cannot be undone.';
+
+  @override
+  String get restoreTaskTitle => 'Restore Task?';
+
+  @override
+  String get restoreTaskContent =>
+      'Do you want to move this task back to your active list?';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get permanentDelete => 'Delete Permanently';
+
+  @override
+  String get deletedAtPrefix => 'Deleted on';
+
+  @override
+  String get search => 'Search...';
+
+  @override
+  String get noResults => 'No matching tasks found';
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get clearFilters => 'Clear Filters';
+
+  @override
+  String get exportData => 'Export Tasks';
+
+  @override
+  String get importData => 'Restore Tasks';
+
+  @override
+  String get importConfirmTitle => 'Restore Tasks?';
+
+  @override
+  String importConfirmContent(int count) {
+    return 'This will merge $count tasks from the backup into your current list. Continue?';
+  }
+
+  @override
+  String get importSuccess => 'Data restored successfully';
+
+  @override
+  String get exportSuccess => 'Data exported successfully';
+
+  @override
+  String get invalidFile => 'Invalid backup file';
 }

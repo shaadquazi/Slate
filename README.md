@@ -1,51 +1,37 @@
-## Slate
+# Slate
 
-Slate is a simple and clean task manager designed to help you stay organized. It helps you focus on your goals with a distraction-free interface and smart scheduling.
+Minimalist, local-first task manager designed for focus.
 
 ### Features
 
-- **Easy Organizing**: Create tasks with titles and descriptions.
-- **Smart Tracking**: Swipe to move tasks from "Pending" to "Done."
-- **Repeating Tasks**: Set tasks to repeat daily, weekly, monthly, or yearly.
-- **Natural Filtering**: View tasks due "Today," "This week," "This month," or "This year."
-- **Smart Sorting**: The most urgent tasks automatically stay at the top.
-- **Photo Attachments**: Add images to your tasks for extra context.
-- **Always Available**: Works entirely offline and remembers your settings.
+- **Efficient Workflow**: Swipe to progress through tasks and your day.
+- **Markdown Support**: Rich text descriptions with headers, bold, and italics.
+- **Interactive Checklists**: Manage sub-tasks directly from the list.
+- **Smart Search**: High-visibility highlighting across titles and descriptions.
+- **Flexible Scheduling**: Support for recurring tasks and specific due dates.
+- **Safety Net**: Restore recently deleted items from the Trash Bin.
+- **Photo Attachments**: Attach photos with a built-in interactive viewer.
+- **Data Portability**: Export and Restore tasks as JSON files.
+- **Private & Fast**: All data stays securely on your device.
 
----
+### Run Locally
 
-### How to Run
-
-To get Slate up and running on your machine:
-
-1. **Install dependencies**:
-   ```bash
-   flutter pub get
-   ```
-
-2. **Prepare the app**:
-   ```bash
-   flutter gen-l10n
-   flutter pub run build_runner build --delete-conflicting-outputs
-   ```
-
-3. **Launch**:
-   ```bash
-   flutter run
-   ```
-
----
-
-### How to Build & Release
-
-#### For iOS
-To create an iPhone app:
 ```bash
-flutter build ios
+flutter pub get
+flutter gen-l10n
+dart run build_runner build --delete-conflicting-outputs
+flutter run
 ```
 
-#### For Web
-To create a version for your website:
+### Release
+
+- **iOS**: `flutter build ios`
+- **Android**: `flutter build apk --release`
+- **Web**: `flutter build web --release`
+
+### Versioning
+
+Sync version using the build script:
 ```bash
-flutter build web --release
+./scripts/bump_version.sh
 ```

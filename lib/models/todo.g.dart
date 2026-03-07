@@ -28,13 +28,16 @@ class TodoAdapter extends TypeAdapter<Todo> {
       completedOn: fields[8] as DateTime?,
       dueDate: fields[10] as DateTime?,
       imagePath: fields[11] as String?,
-    )..imageBytes = fields[9] as Uint8List?;
+      imageBytes: fields[9] as Uint8List?,
+      isDeleted: fields[12] as bool,
+      deletedAt: fields[13] as DateTime?,
+    );
   }
 
   @override
   void write(BinaryWriter writer, Todo obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(14)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -58,7 +61,11 @@ class TodoAdapter extends TypeAdapter<Todo> {
       ..writeByte(10)
       ..write(obj.dueDate)
       ..writeByte(11)
-      ..write(obj.imagePath);
+      ..write(obj.imagePath)
+      ..writeByte(12)
+      ..write(obj.isDeleted)
+      ..writeByte(13)
+      ..write(obj.deletedAt);
   }
 
   @override

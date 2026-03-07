@@ -7,7 +7,7 @@ import 'package:slate/screens/editable_image_field.dart';
 import 'package:slate/widgets/image_picker_field.dart';
 import 'package:slate/l10n/generated/app_localizations.dart';
 
-import 'package:slate/widgets/optional_description_field.dart';
+import 'package:slate/widgets/markdown_description_field.dart';
 import '../models/todo.dart';
 import '../providers/todo_provider.dart';
 
@@ -55,6 +55,20 @@ class _AddEditScreenState extends State<AddEditScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
+    String title = titleCtrl.text.trim();
+    String description = descCtrl.text.trim();
+
+    if (title.isNotEmpty) {
+      title = title.split(' ').map((word) {
+        if (word.isEmpty) return word;
+        return word[0].toUpperCase() + word.substring(1).toLowerCase();
+      }).join(' ');
+    }
+
+    if (description.isNotEmpty) {
+      description = description[0].toUpperCase() + description.substring(1);
+    }
+
     if (repeat == RepeatFrequency.none && repeatEndDate != null && dueDate == null) {
       dueDate = repeatEndDate;
     }
@@ -68,8 +82,8 @@ class _AddEditScreenState extends State<AddEditScreen> {
     if (isEdit) {
       provider.updateTodo(
         widget.todo!,
-        title: titleCtrl.text,
-        description: descCtrl.text,
+        title: title,
+        description: description,
         status: status,
         repeat: repeat,
         repeatEndDate: repeatEndDate,
@@ -78,8 +92,8 @@ class _AddEditScreenState extends State<AddEditScreen> {
       );
     } else {
       provider.createAndAddTodo(
-        title: titleCtrl.text,
-        description: descCtrl.text,
+        title: title,
+        description: description,
         status: status,
         repeat: repeat,
         repeatEndDate: repeatEndDate,
@@ -163,131 +177,147 @@ class _AddEditScreenState extends State<AddEditScreen> {
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: titleCtrl,
-                  autofocus: !isEdit,
-                  textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _saveTodo(),
-                  decoration: InputDecoration(labelText: l10n.title),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? l10n.emptyTitle : null,
-                ),
-                const SizedBox(height: 16),
-                OptionalDescriptionField(controller: descCtrl),
-                const SizedBox(height: 16),
-                
-                if (imageBytes != null || initialImagePath != null) ...[
-                  Text(l10n.photo, style: const TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  EditableImageField(
-                    isEdit: true,
-                    initialBytes: imageBytes,
-                    initialImagePath: initialImagePath,
-                    onChanged: (b) => setState(() => imageBytes = b),
-                  ),
-                ] else
-                  ImagePickerField(onChanged: (b) => setState(() => imageBytes = b)),
-                
-                const SizedBox(height: 24),
-                Text(l10n.schedule, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                const SizedBox(height: 12),
-                
-                Row(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDateField(
-                      label: l10n.dueDate,
-                      value: dueDate,
-                      icon: Icons.calendar_today,
-                      onTap: () => _pickDate(
-                        initialValue: dueDate,
-                        firstDate: now,
-                        onPicked: (d) => setState(() {
-                          dueDate = d;
-                          if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
-                            repeatEndDate = dueDate;
-                          }
-                        }),
+                    IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: titleCtrl,
+                              autofocus: !isEdit,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _saveTodo(),
+                              expands: true,
+                              maxLines: null,
+                              minLines: null,
+                              textAlignVertical: TextAlignVertical.bottom,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                              decoration: InputDecoration(
+                                labelText: l10n.title,
+                                floatingLabelBehavior: FloatingLabelBehavior.always,
+                                contentPadding: const EdgeInsets.only(bottom: 8),
+                              ),
+                              validator: (v) => (v == null || v.trim().isEmpty) ? l10n.emptyTitle : null,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          if (imageBytes != null || initialImagePath != null)
+                            EditableImageField(
+                              isEdit: true,
+                              initialBytes: imageBytes,
+                              initialImagePath: initialImagePath,
+                              onChanged: (b) => setState(() => imageBytes = b),
+                            )
+                          else
+                            ImagePickerField(onChanged: (b) => setState(() => imageBytes = b)),
+                        ],
                       ),
-                      onClear: () => setState(() => dueDate = null),
                     ),
+                    const SizedBox(height: 16),
+                    MarkdownDescriptionField(
+                      controller: descCtrl,
+                      startWithPreview: isEdit,
+                      todo: widget.todo,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(l10n.schedule, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _buildDateField(
+                          label: l10n.dueDate,
+                          value: dueDate,
+                          icon: Icons.calendar_today,
+                          onTap: () => _pickDate(
+                            initialValue: dueDate,
+                            firstDate: now,
+                            onPicked: (d) => setState(() {
+                              dueDate = d;
+                              if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
+                                repeatEndDate = dueDate;
+                              }
+                            }),
+                          ),
+                          onClear: () => setState(() => dueDate = null),
+                        ),
+                        const SizedBox(width: 8),
+                        DropdownMenu<RepeatFrequency>(
+                          width: 120,
+                          label: Text(l10n.frequency),
+                          initialSelection: repeat,
+                          onSelected: (v) => setState(() => repeat = v!),
+                          dropdownMenuEntries: RepeatFrequency.values
+                              .map((r) => DropdownMenuEntry(value: r, label: r.localizedLabel(l10n)))
+                              .toList(),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildDateField(
+                          label: l10n.endDate,
+                          value: repeatEndDate,
+                          icon: Icons.event_available,
+                          onTap: () => _pickDate(
+                            initialValue: repeatEndDate,
+                            firstDate: dueDate ?? now,
+                            onPicked: (d) => setState(() => repeatEndDate = d),
+                          ),
+                          onClear: () => setState(() => repeatEndDate = null),
+                        ),
+                      ],
+                    ),
+                    if (isEdit) ...[
+                      const SizedBox(height: 24),
+                      Text(l10n.status, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: Status.values.map((s) => ChoiceChip(
+                            label: Text(s.localizedLabel(l10n)),
+                            selected: status == s,
+                            showCheckmark: false,
+                            onSelected: (_) => setState(() => status = s),
+                          )).toList(),
+                        ),
+                      ),
+                      if (status == Status.completed && completedOn != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            '${l10n.completedOnPrefix} ${DateFormat.yMMMd().add_jm().format(completedOn!)}',
+                            style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
+                          ),
+                        ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownMenu<RepeatFrequency>(
-                        expandedInsets: EdgeInsets.zero,
-                        label: Text(l10n.frequency),
-                        initialSelection: repeat,
-                        onSelected: (v) => setState(() => repeat = v!),
-                        dropdownMenuEntries: RepeatFrequency.values
-                            .map((r) => DropdownMenuEntry(value: r, label: r.label))
-                            .toList(),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    _buildDateField(
-                      label: l10n.endDate,
-                      value: repeatEndDate,
-                      icon: Icons.event_available,
-                      onTap: () => _pickDate(
-                        initialValue: repeatEndDate,
-                        firstDate: dueDate ?? now,
-                        onPicked: (d) => setState(() => repeatEndDate = d),
-                      ),
-                      onClear: () => setState(() => repeatEndDate = null),
-                    ),
-                  ],
-                ),
-                
-                if (isEdit) ...[
-                  const SizedBox(height: 24),
-                  Text(l10n.status, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: Status.values.map((s) => ChoiceChip(
-                        label: Text(s.label),
-                        selected: status == s,
-                        showCheckmark: false,
-                        onSelected: (_) => setState(() => status = s),
-                      )).toList(),
-                    ),
-                  ),
-                  if (status == Status.completed && completedOn != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        '${l10n.completedOnPrefix} ${DateFormat.yMMMd().add_jm().format(completedOn!)}',
-                        style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 12),
-                      ),
-                    ),
-                ],
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    onPressed: _saveTodo,
-                    child: Text(isEdit ? l10n.update : l10n.save, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  onPressed: _saveTodo,
+                  child: Text(isEdit ? l10n.update : l10n.save, style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
