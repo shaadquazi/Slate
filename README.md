@@ -21,6 +21,7 @@ Minimalist, local-first task manager designed for focus.
 ```bash
 flutter pub get
 flutter gen-l10n
+cd ios && pod install && cd .. # for ios
 dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
