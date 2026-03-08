@@ -77,13 +77,20 @@ class _MarkdownDescriptionFieldState extends State<MarkdownDescriptionField> {
               style: const ButtonStyle(visualDensity: VisualDensity.compact),
             ),
             if (!_isPreview)
-              Row(
-                children: [
-                  _ToolbarButton(icon: Icons.format_bold, onTap: () => _insertMarkdown('**', '**')),
-                  _ToolbarButton(icon: Icons.format_italic, onTap: () => _insertMarkdown('_', '_')),
-                  _ToolbarButton(icon: Icons.format_list_bulleted, onTap: () => _insertMarkdown('\n* ')),
-                  _ToolbarButton(icon: Icons.check_box_outlined, onTap: () => _insertMarkdown('\n* [ ] ')),
-                ],
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  reverse: true,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _ToolbarButton(icon: Icons.format_bold, onTap: () => _insertMarkdown('**', '**')),
+                      _ToolbarButton(icon: Icons.format_italic, onTap: () => _insertMarkdown('_', '_')),
+                      _ToolbarButton(icon: Icons.format_list_bulleted, onTap: () => _insertMarkdown('\n* ')),
+                      _ToolbarButton(icon: Icons.check_box_outlined, onTap: () => _insertMarkdown('\n* [ ] ')),
+                    ],
+                  ),
+                ),
               ),
           ],
         ),

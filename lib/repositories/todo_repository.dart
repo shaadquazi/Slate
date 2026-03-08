@@ -120,6 +120,15 @@ class TodoRepository {
           try {
             if (!item.containsKey('id') || !item.containsKey('title')) continue;
             final todo = Todo.fromJson(item);
+            
+            if (!kIsWeb && todo.imageBytes != null && todo.imagePath == null) {
+              final result = await saveImage(todo.imageBytes!, todo.id);
+              if (result is String) {
+                todo.imagePath = result;
+                todo.imageBytes = null;
+              }
+            }
+
             await saveTodo(todo);
             importedCount++;
           } catch (_) {}

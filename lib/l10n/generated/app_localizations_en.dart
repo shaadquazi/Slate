@@ -63,6 +63,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addDescription => 'Add description';
 
   @override
+  String get addSchedule => 'Add Schedule';
+
+  @override
   String get schedule => 'Schedule';
 
   @override

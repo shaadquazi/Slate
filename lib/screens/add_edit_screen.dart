@@ -231,45 +231,59 @@ class _AddEditScreenState extends State<AddEditScreen> {
                       todo: widget.todo,
                     ),
                     const SizedBox(height: 24),
-                    Text(l10n.schedule, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                    const SizedBox(height: 12),
-                    _buildDateField(
-                      label: l10n.dueDate,
-                      value: dueDate,
-                      icon: Icons.calendar_today,
-                      onTap: () => _pickDate(
-                        initialValue: dueDate,
-                        firstDate: now,
-                        onPicked: (d) => setState(() {
-                          dueDate = d;
-                          if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
-                            repeatEndDate = dueDate;
-                          }
-                        }),
+                    Theme(
+                      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        initiallyExpanded: dueDate != null || repeat != RepeatFrequency.none,
+                        tilePadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.calendar_today_outlined, size: 20),
+                        title: Text(
+                          dueDate == null && repeat == RepeatFrequency.none ? l10n.addSchedule : l10n.schedule,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                        ),
+                        children: [
+                          const SizedBox(height: 8),
+                          _buildDateField(
+                            label: l10n.dueDate,
+                            value: dueDate,
+                            icon: Icons.calendar_today,
+                            onTap: () => _pickDate(
+                              initialValue: dueDate,
+                              firstDate: now,
+                              onPicked: (d) => setState(() {
+                                dueDate = d;
+                                if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
+                                  repeatEndDate = dueDate;
+                                }
+                              }),
+                            ),
+                            onClear: () => setState(() => dueDate = null),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownMenu<RepeatFrequency>(
+                            expandedInsets: EdgeInsets.zero,
+                            label: Text(l10n.frequency),
+                            initialSelection: repeat,
+                            onSelected: (v) => setState(() => repeat = v!),
+                            dropdownMenuEntries: RepeatFrequency.values
+                                .map((r) => DropdownMenuEntry(value: r, label: r.localizedLabel(l10n)))
+                                .toList(),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildDateField(
+                            label: l10n.endDate,
+                            value: repeatEndDate,
+                            icon: Icons.event_available,
+                            onTap: () => _pickDate(
+                              initialValue: repeatEndDate,
+                              firstDate: dueDate ?? now,
+                              onPicked: (d) => setState(() => repeatEndDate = d),
+                            ),
+                            onClear: () => setState(() => repeatEndDate = null),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ),
-                      onClear: () => setState(() => dueDate = null),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownMenu<RepeatFrequency>(
-                      expandedInsets: EdgeInsets.zero,
-                      label: Text(l10n.frequency),
-                      initialSelection: repeat,
-                      onSelected: (v) => setState(() => repeat = v!),
-                      dropdownMenuEntries: RepeatFrequency.values
-                          .map((r) => DropdownMenuEntry(value: r, label: r.localizedLabel(l10n)))
-                          .toList(),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildDateField(
-                      label: l10n.endDate,
-                      value: repeatEndDate,
-                      icon: Icons.event_available,
-                      onTap: () => _pickDate(
-                        initialValue: repeatEndDate,
-                        firstDate: dueDate ?? now,
-                        onPicked: (d) => setState(() => repeatEndDate = d),
-                      ),
-                      onClear: () => setState(() => repeatEndDate = null),
                     ),
                     if (isEdit) ...[
                       const SizedBox(height: 24),

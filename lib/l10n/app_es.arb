@@ -17,6 +17,7 @@
   "clearDueDate": "Borrar fecha de vencimiento",
   "photo": "Foto",
   "addDescription": "Añadir descripción",
+  "addSchedule": "Añadir horario",
   "schedule": "Horario",
   "due": "Vence",
   "noTasks": "Sin tareas",

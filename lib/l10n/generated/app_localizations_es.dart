@@ -63,6 +63,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addDescription => 'Añadir descripción';
 
   @override
+  String get addSchedule => 'Añadir horario';
+
+  @override
   String get schedule => 'Horario';
 
   @override

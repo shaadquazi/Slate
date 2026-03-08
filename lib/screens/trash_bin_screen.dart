@@ -68,6 +68,7 @@ class TrashBinScreen extends StatelessWidget {
         title: Text(l10n.emptyTrashConfirmTitle),
         content: Text(l10n.emptyTrashConfirmContent),
         actions: [
+
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(l10n.cancel),

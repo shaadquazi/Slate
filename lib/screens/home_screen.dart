@@ -47,160 +47,150 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (sheetContext) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => SafeArea(
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 32,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.settings,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    leading: const Icon(Icons.palette_outlined),
-                    title: Text(l10n.theme),
-                    trailing: DropdownButton<ThemeMode>(
-                      value: provider.themeMode,
-                      underline: const SizedBox(),
-                      onChanged: (mode) {
-                        if (mode != null) {
-                          provider.setThemeMode(mode);
-                          Navigator.pop(sheetContext);
-                        }
-                      },
-                      items: [
-                        DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.system)),
-                        DropdownMenuItem(value: ThemeMode.light, child: Text(l10n.light)),
-                        DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.dark)),
-                      ],
-                    ),
-                  ),
-                  const Divider(indent: 16, endIndent: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        l10n.personalization,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.language_outlined),
-                    title: Text(l10n.language),
-                    trailing: DropdownButton<String?>(
-                      value: provider.locale?.languageCode,
-                      underline: const SizedBox(),
-                      onChanged: (code) {
-                        provider.setLocale(code == null ? null : Locale(code));
-                        Navigator.pop(sheetContext);
-                      },
-                      items: [
-                        DropdownMenuItem(value: null, child: Text(l10n.system)),
-                        DropdownMenuItem(value: 'en', child: Text(l10n.english)),
-                        DropdownMenuItem(value: 'es', child: Text(l10n.spanish)),
-                      ],
-                    ),
-                  ),
-                  const Divider(indent: 16, endIndent: 16),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        l10n.dataManagement,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.ios_share),
-                    title: Text(l10n.exportData),
-                    onTap: () async {
-                      Navigator.pop(sheetContext);
-                      try {
-                        await provider.exportData();
-                      } catch (e) {
-                        if (rootContext.mounted) {
-                          ScaffoldMessenger.of(rootContext).showSnackBar(
-                            SnackBar(content: Text('Export failed: $e')),
-                          );
-                        }
-                      }
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.unarchive_outlined),
-                    title: Text(l10n.importData),
-                    onTap: () async {
-                      Navigator.pop(sheetContext);
-                      await Future.delayed(const Duration(milliseconds: 150));
-                      if (rootContext.mounted) {
-                        _handleImport(rootContext, provider);
-                      }
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.delete_outline),
-                    title: Text(l10n.trashBin),
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      _clearSearch();
-                      Navigator.push(
-                        rootContext,
-                        MaterialPageRoute(builder: (_) => const TrashBinScreen()),
-                      );
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.delete_forever_outlined, color: Theme.of(context).colorScheme.error),
-                    title: Text(l10n.resetApp, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      _confirmReset(rootContext, provider);
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: Text(
-                      provider.appVersion,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 32,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.settings,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.palette_outlined),
+                title: Text(l10n.theme),
+                trailing: DropdownButton<ThemeMode>(
+                  value: provider.themeMode,
+                  underline: const SizedBox(),
+                  onChanged: (mode) {
+                    if (mode != null) {
+                      provider.setThemeMode(mode);
+                      Navigator.pop(sheetContext);
+                    }
+                  },
+                  items: [
+                    DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.system)),
+                    DropdownMenuItem(value: ThemeMode.light, child: Text(l10n.light)),
+                    DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.dark)),
+                  ],
+                ),
+              ),
+              const Divider(indent: 16, endIndent: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.personalization,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.language_outlined),
+                title: Text(l10n.language),
+                trailing: DropdownButton<String?>(
+                  value: provider.locale?.languageCode,
+                  underline: const SizedBox(),
+                  onChanged: (code) {
+                    provider.setLocale(code == null ? null : Locale(code));
+                    Navigator.pop(sheetContext);
+                  },
+                  items: [
+                    DropdownMenuItem(value: null, child: Text(l10n.system)),
+                    DropdownMenuItem(value: 'en', child: Text(l10n.english)),
+                    DropdownMenuItem(value: 'es', child: Text(l10n.spanish)),
+                  ],
+                ),
+              ),
+              const Divider(indent: 16, endIndent: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.dataManagement,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.ios_share),
+                title: Text(l10n.exportData),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  try {
+                    await provider.exportData();
+                  } catch (e) {
+                    if (rootContext.mounted) {
+                      ScaffoldMessenger.of(rootContext).showSnackBar(
+                        SnackBar(content: Text('Export failed: $e')),
+                      );
+                    }
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.unarchive_outlined),
+                title: Text(l10n.importData),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await Future.delayed(const Duration(milliseconds: 150));
+                  if (rootContext.mounted) {
+                    _handleImport(rootContext, provider);
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(l10n.trashBin),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _clearSearch();
+                  Navigator.push(
+                    rootContext,
+                    MaterialPageRoute(builder: (_) => const TrashBinScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete_forever_outlined, color: Theme.of(context).colorScheme.error),
+                title: Text(l10n.resetApp, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _confirmReset(rootContext, provider);
+                },
+              ),
+              const SizedBox(height: 24),
+              Text(
+                provider.appVersion,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+              ),
+              const SizedBox(height: 8),
+            ],
           ),
         ),
       ),

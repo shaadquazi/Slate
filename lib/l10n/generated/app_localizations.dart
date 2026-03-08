@@ -206,6 +206,12 @@ abstract class AppLocalizations {
   /// **'Add description'**
   String get addDescription;
 
+  /// No description provided for @addSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Schedule'**
+  String get addSchedule;
+
   /// No description provided for @schedule.
   ///
   /// In en, this message translates to:

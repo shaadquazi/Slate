@@ -53,15 +53,18 @@ class _StatusSectionState extends State<StatusSection> {
         ...visibleTodos.map((t) => TodoTile(todo: t, onNavigate: widget.onNavigate)),
 
         if (showMoreButton)
-          TextButton(
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            onPressed: () => setState(() => expanded = !expanded),
-            child: Text(
-              expanded
-                  ? l10n.showLess
-                  : l10n.showMore(remaining),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              onPressed: () => setState(() => expanded = !expanded),
+              child: Text(
+                expanded
+                    ? l10n.showLess
+                    : l10n.showMore(remaining),
+              ),
             ),
           ),
       ],

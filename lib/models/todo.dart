@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'dart:typed_data';
+import 'dart:convert';
 import '../l10n/generated/app_localizations.dart';
 
 part 'todo.g.dart';
@@ -119,13 +120,13 @@ class Todo extends HiveObject {
       'completedOn': completedOn?.toIso8601String(),
       'dueDate': dueDate?.toIso8601String(),
       'imagePath': imagePath,
+      'imageBytes': imageBytes != null ? base64Encode(imageBytes!) : null,
       'isDeleted': isDeleted,
       'deletedAt': deletedAt?.toIso8601String(),
     };
   }
 
   factory Todo.fromJson(Map<String, dynamic> json) {
-    // Helper to safely parse int fields that might come as strings or invalid values
     int parseEnum(dynamic value, int length, int defaultValue) {
       if (value is int && value >= 0 && value < length) return value;
       if (value is String) {
@@ -133,6 +134,13 @@ class Todo extends HiveObject {
         if (parsed != null && parsed >= 0 && parsed < length) return parsed;
       }
       return defaultValue;
+    }
+
+    Uint8List? decodedBytes;
+    if (json['imageBytes'] != null) {
+      try {
+        decodedBytes = base64Decode(json['imageBytes'] as String);
+      } catch (_) {}
     }
 
     return Todo(
@@ -147,6 +155,7 @@ class Todo extends HiveObject {
       completedOn: json['completedOn'] != null ? DateTime.tryParse(json['completedOn'].toString()) : null,
       dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate'].toString()) : null,
       imagePath: json['imagePath'] as String?,
+      imageBytes: decodedBytes,
       isDeleted: json['isDeleted'] as bool? ?? false,
       deletedAt: json['deletedAt'] != null ? DateTime.tryParse(json['deletedAt'].toString()) : null,
     );
