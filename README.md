@@ -2,6 +2,8 @@
 
 Minimalist, local-first task manager designed for focus.
 
+![Slate Demo](./assets/demo.gif)
+
 ### Features
 
 - **Efficient Workflow**: Swipe to progress through tasks and your day.

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "fixture_markdown_1",
+    "title": "Markdown Showcase",
+    "description": "This fixture tests rich text rendering including headers, bold, and code blocks.\n# Big Header\n## Sub Header\nThis is **bold** and this is _italic_.\n\n`Code block here`",
+    "status": 0,
+    "createdAt": "2026-03-08T12:00:00.000",
+    "updatedAt": "2026-03-08T12:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  }
+]

@@ -1,0 +1,108 @@
+[
+  {
+    "id": "demo_1",
+    "title": "Simple Task Example",
+    "description": "This is a basic task with just a title and status.",
+    "status": 0,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  },
+  {
+    "id": "demo_2",
+    "title": "Detailed Markdown Feature",
+    "description": "This task demonstrates full Markdown support.\n# Header 1\n## Header 2\n* **Bold text** for emphasis\n* _Italic text_ for style\n* `Code snippets` for technical notes.\n\nUse this to test the professional renderer.",
+    "status": 1,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  },
+  {
+    "id": "demo_3",
+    "title": "Interactive Checklist Demo",
+    "description": "Manage sub-tasks directly from the home screen.\n* [x] Feature 1: Markdown Parsing\n* [x] Feature 2: Regex Matching\n* [ ] Feature 3: Interactive Toggling\n* [ ] Feature 4: Persistence",
+    "status": 1,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  },
+  {
+    "id": "demo_4",
+    "title": "Future Due Date (2030)",
+    "description": "This task is scheduled for far in the future to test long-term planning and sorting.",
+    "status": 0,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 0,
+    "dueDate": "2030-05-20T12:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "demo_5",
+    "title": "Overdue High Priority",
+    "description": "This is the ONLY overdue task. It should appear RED and BOLD in the list to grab your attention.",
+    "status": 0,
+    "createdAt": "2026-03-01T10:00:00.000",
+    "updatedAt": "2026-03-01T10:00:00.000",
+    "repeat": 0,
+    "dueDate": "2026-03-07T23:59:59.000",
+    "isDeleted": false
+  },
+  {
+    "id": "demo_6",
+    "title": "Daily Recurring Logic",
+    "description": "This task repeats DAILY. Complete it to see the app automatically generate tomorrow's occurrence.",
+    "status": 1,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 1,
+    "isDeleted": false
+  },
+  {
+    "id": "demo_7",
+    "title": "Weekly with End Date",
+    "description": "This task repeats WEEKLY until the end of 2030.",
+    "status": 0,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 2,
+    "repeatEndDate": "2030-12-31T23:59:59.000",
+    "dueDate": "2030-03-15T09:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "demo_8",
+    "title": "Completed Task Archive",
+    "description": "This task is already finished. It appears in the 'Completed' section and shows the completion timestamp.",
+    "status": 2,
+    "createdAt": "2026-03-01T10:00:00.000",
+    "updatedAt": "2026-03-05T15:30:00.000",
+    "completedOn": "2026-03-05T15:30:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  },
+  {
+    "id": "demo_9",
+    "title": "Trashed Task (Visible in Bin)",
+    "description": "This task was 'deleted'. It won't show on the home screen but is visible in the Trash Bin for restoration.",
+    "status": 0,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T11:00:00.000",
+    "repeat": 0,
+    "isDeleted": true,
+    "deletedAt": "2026-03-08T11:00:00.000"
+  },
+  {
+    "id": "demo_10",
+    "title": "Long Description Truncation",
+    "description": "This task has a very long description to test the 'more' and 'less' toggle functionality on the home screen. It should be truncated to exactly one line in the collapsed state, with the toggle button pinned to the right. This ensures the list stays clean even when tasks contain a massive amount of technical documentation or notes. Tapping 'more' will expand it to show the full Markdown content including headers and lists.",
+    "status": 1,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  }
+]

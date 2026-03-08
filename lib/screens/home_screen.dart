@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showSettings(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final provider = context.read<TodoProvider>();
+    final rootContext = context;
 
     showModalBottomSheet(
       context: context,
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (context) => DraggableScrollableSheet(
+      builder: (sheetContext) => DraggableScrollableSheet(
         initialChildSize: 0.6,
         minChildSize: 0.4,
         maxChildSize: 0.9,
@@ -85,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onChanged: (mode) {
                         if (mode != null) {
                           provider.setThemeMode(mode);
-                          Navigator.pop(context);
+                          Navigator.pop(sheetContext);
                         }
                       },
                       items: [
@@ -117,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       underline: const SizedBox(),
                       onChanged: (code) {
                         provider.setLocale(code == null ? null : Locale(code));
-                        Navigator.pop(context);
+                        Navigator.pop(sheetContext);
                       },
                       items: [
                         DropdownMenuItem(value: null, child: Text(l10n.system)),
@@ -144,13 +145,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     leading: const Icon(Icons.ios_share),
                     title: Text(l10n.exportData),
                     onTap: () async {
-                      final outerContext = context;
-                      Navigator.pop(context);
+                      Navigator.pop(sheetContext);
                       try {
                         await provider.exportData();
                       } catch (e) {
-                        if (outerContext.mounted) {
-                          ScaffoldMessenger.of(outerContext).showSnackBar(
+                        if (rootContext.mounted) {
+                          ScaffoldMessenger.of(rootContext).showSnackBar(
                             SnackBar(content: Text('Export failed: $e')),
                           );
                         }
@@ -161,12 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     leading: const Icon(Icons.unarchive_outlined),
                     title: Text(l10n.importData),
                     onTap: () async {
-                      final outerContext = context;
-                      Navigator.pop(context);
-                      // Small delay to allow sheet to close fully
-                      await Future.delayed(const Duration(milliseconds: 100));
-                      if (outerContext.mounted) {
-                        _handleImport(outerContext, provider);
+                      Navigator.pop(sheetContext);
+                      await Future.delayed(const Duration(milliseconds: 150));
+                      if (rootContext.mounted) {
+                        _handleImport(rootContext, provider);
                       }
                     },
                   ),
@@ -174,10 +172,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     leading: const Icon(Icons.delete_outline),
                     title: Text(l10n.trashBin),
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.pop(sheetContext);
                       _clearSearch();
                       Navigator.push(
-                        context,
+                        rootContext,
                         MaterialPageRoute(builder: (_) => const TrashBinScreen()),
                       );
                     },
@@ -186,8 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     leading: Icon(Icons.delete_forever_outlined, color: Theme.of(context).colorScheme.error),
                     title: Text(l10n.resetApp, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                     onTap: () {
-                      Navigator.pop(context);
-                      _confirmReset(context, provider);
+                      Navigator.pop(sheetContext);
+                      _confirmReset(rootContext, provider);
                     },
                   ),
                   const SizedBox(height: 24),
@@ -218,27 +216,40 @@ class _HomeScreenState extends State<HomeScreen> {
         withData: true,
       );
 
-      if (result != null) {
-        String jsonString;
-        if (kIsWeb) {
-          final bytes = result.files.single.bytes;
-          if (bytes == null) throw 'No data received';
-          jsonString = utf8.decode(bytes);
-        } else {
-          final path = result.files.single.path;
-          if (path == null) throw 'No file path found';
+      if (result == null) return;
+
+      String jsonString;
+      if (kIsWeb) {
+        final bytes = result.files.single.bytes;
+        if (bytes == null) throw 'No data received';
+        jsonString = utf8.decode(bytes);
+      } else {
+        final path = result.files.single.path;
+        final bytes = result.files.single.bytes;
+        if (path != null) {
           final file = File(path);
           jsonString = await file.readAsString();
+        } else if (bytes != null) {
+          jsonString = utf8.decode(bytes);
+        } else {
+          throw 'Could not read file';
         }
-        
-        if (context.mounted) {
-          _confirmImport(context, provider, jsonString);
-        }
+      }
+
+      if (jsonString.isEmpty) throw 'Selected file is empty';
+
+      if (context.mounted) {
+        _confirmImport(context, provider, jsonString);
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.invalidFile}: $e')),
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text(l10n.invalidFile),
+            content: Text(e.toString()),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+          ),
         );
       }
     }
@@ -246,7 +257,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _confirmImport(BuildContext context, TodoProvider provider, String jsonString) {
     final l10n = AppLocalizations.of(context)!;
-    
     int count = 0;
     try {
       final decoded = jsonDecode(jsonString);
@@ -254,45 +264,50 @@ class _HomeScreenState extends State<HomeScreen> {
         count = decoded.length;
       } else if (decoded is Map && decoded.containsKey('todos')) {
         count = (decoded['todos'] as List).length;
+      } else if (decoded is Map) {
+        count = 1;
       }
     } catch (_) {
-      // If parsing fails here, the provider will handle it later
+      return;
     }
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
         title: Text(l10n.importConfirmTitle),
         content: Text(l10n.importConfirmContent(count)), 
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: Text(l10n.cancel)),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
-              try {
-                // Show loading indicator
-                if (context.mounted) {
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) => const Center(child: CircularProgressIndicator()),
-                  );
-                }
+              Navigator.pop(dialogContext);
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(child: CircularProgressIndicator()),
+                );
+              }
 
+              try {
                 final importedCount = await provider.importData(jsonString);
-                
                 if (context.mounted) {
-                  Navigator.pop(context); // Remove loading
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('${l10n.importSuccess} ($importedCount)')),
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  // If we showed a loading dialog, we must pop it
                   Navigator.of(context, rootNavigator: true).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${l10n.invalidFile}: $e')),
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text(l10n.invalidFile),
+                      content: Text(e.toString()),
+                      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+                    ),
                   );
                 }
               }
@@ -321,9 +336,21 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(l10n.filters, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(
+                        Icons.help_outline, 
+                        size: 16, 
+                        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.6),
+                      ),
+                      onPressed: () => _showFilterHelp(context),
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const Spacer(),
                     if (provider.isFilterActive)
                       TextButton(
                         onPressed: provider.clearAllFilters,
@@ -362,6 +389,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showFilterHelp(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.filterHelp),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _HelpRow(label: l10n.today, help: l10n.filterHelpToday),
+            _HelpRow(label: l10n.thisWeek, help: l10n.filterHelpThisWeek),
+            _HelpRow(label: l10n.nextSevenDays, help: l10n.filterHelpIn7Days),
+            _HelpRow(label: l10n.thisMonth, help: l10n.filterHelpThisMonth),
+            _HelpRow(label: l10n.thisYear, help: l10n.filterHelpThisYear),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK')),
+        ],
+      ),
+    );
+  }
+
   void _confirmReset(BuildContext context, TodoProvider provider) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
@@ -371,8 +421,7 @@ class _HomeScreenState extends State<HomeScreen> {
         content: Text(l10n.resetAppConfirmContent),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
+            onPressed: () => Navigator.pop(context), child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -501,6 +550,25 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HelpRow extends StatelessWidget {
+  final String label;
+  final String help;
+  const _HelpRow({required this.label, required this.help});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          SizedBox(width: 90, child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13))),
+          Expanded(child: Text(help, style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 13))),
         ],
       ),
     );

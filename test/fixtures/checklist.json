@@ -1,0 +1,12 @@
+[
+  {
+    "id": "fixture_checklist_1",
+    "title": "Checklist & Truncation",
+    "description": "This fixture tests interactive checkboxes and single-line Home screen truncation.\n* [x] Item 1 (Done)\n* [ ] Item 2\n* [ ] Item 3\n* [ ] Item 4\n* [ ] Item 5\n* [ ] Item 6",
+    "status": 1,
+    "createdAt": "2026-03-08T12:00:00.000",
+    "updatedAt": "2026-03-08T12:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  }
+]

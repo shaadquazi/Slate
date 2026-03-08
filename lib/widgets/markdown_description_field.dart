@@ -54,6 +54,11 @@ class _MarkdownDescriptionFieldState extends State<MarkdownDescriptionField> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final shortestSide = MediaQuery.of(context).size.shortestSide;
+    final isTablet = shortestSide >= 600;
+
+    final dynamicMaxLines = isTablet ? 20 : 10;
+    final dynamicMaxHeight = isTablet ? 480.0 : 240.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,30 +91,32 @@ class _MarkdownDescriptionFieldState extends State<MarkdownDescriptionField> {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: _isPreview
-              ? Container(
+              ? ConstrainedBox(
                   key: const ValueKey('preview'),
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
                   constraints: BoxConstraints(
                     minHeight: 100,
-                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                    maxHeight: dynamicMaxHeight,
                   ),
-                  child: SingleChildScrollView(
-                    child: _AddEditPreview(
-                      data: widget.controller.text,
-                      todo: widget.todo,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Theme.of(context).dividerColor),
+                    ),
+                    child: SingleChildScrollView(
+                      child: _AddEditPreview(
+                        data: widget.controller.text,
+                        todo: widget.todo,
+                      ),
                     ),
                   ),
                 )
               : TextFormField(
                   key: const ValueKey('edit'),
                   controller: widget.controller,
-                  maxLines: null,
+                  maxLines: dynamicMaxLines,
                   minLines: 4,
                   autofocus: !widget.startWithPreview,
                   keyboardType: TextInputType.multiline,

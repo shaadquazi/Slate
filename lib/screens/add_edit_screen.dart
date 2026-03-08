@@ -61,6 +61,7 @@ class _AddEditScreenState extends State<AddEditScreen> {
     if (title.isNotEmpty) {
       title = title.split(' ').map((word) {
         if (word.isEmpty) return word;
+        if (word.length > 1 && word == word.toUpperCase()) return word;
         return word[0].toUpperCase() + word.substring(1).toLowerCase();
       }).join(' ');
     }
@@ -131,38 +132,39 @@ class _AddEditScreenState extends State<AddEditScreen> {
     VoidCallback? onClear,
   }) {
     final l10n = AppLocalizations.of(context)!;
-    return Expanded(
-      child: Row(
-        children: [
-          Expanded(
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: onTap,
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: label,
-                  border: const OutlineInputBorder(),
-                  prefixIcon: Icon(icon, size: 20),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                child: Text(
-                  value == null
-                      ? l10n.notSet
-                      : DateFormat.yMMMd().format(value),
-                  style: const TextStyle(fontSize: 14),
-                ),
+    return Row(
+      children: [
+        Expanded(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onTap,
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: label,
+                border: const OutlineInputBorder(),
+                prefixIcon: Icon(icon, size: 20),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              child: Text(
+                value == null
+                    ? l10n.notSet
+                    : DateFormat.yMMMd().format(value),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
           ),
-          if (value != null)
-            IconButton(
+        ),
+        if (value != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: IconButton(
               icon: const Icon(Icons.clear, size: 20),
               onPressed: onClear,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
@@ -231,47 +233,43 @@ class _AddEditScreenState extends State<AddEditScreen> {
                     const SizedBox(height: 24),
                     Text(l10n.schedule, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                     const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _buildDateField(
-                          label: l10n.dueDate,
-                          value: dueDate,
-                          icon: Icons.calendar_today,
-                          onTap: () => _pickDate(
-                            initialValue: dueDate,
-                            firstDate: now,
-                            onPicked: (d) => setState(() {
-                              dueDate = d;
-                              if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
-                                repeatEndDate = dueDate;
-                              }
-                            }),
-                          ),
-                          onClear: () => setState(() => dueDate = null),
-                        ),
-                        const SizedBox(width: 8),
-                        DropdownMenu<RepeatFrequency>(
-                          width: 120,
-                          label: Text(l10n.frequency),
-                          initialSelection: repeat,
-                          onSelected: (v) => setState(() => repeat = v!),
-                          dropdownMenuEntries: RepeatFrequency.values
-                              .map((r) => DropdownMenuEntry(value: r, label: r.localizedLabel(l10n)))
-                              .toList(),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildDateField(
-                          label: l10n.endDate,
-                          value: repeatEndDate,
-                          icon: Icons.event_available,
-                          onTap: () => _pickDate(
-                            initialValue: repeatEndDate,
-                            firstDate: dueDate ?? now,
-                            onPicked: (d) => setState(() => repeatEndDate = d),
-                          ),
-                          onClear: () => setState(() => repeatEndDate = null),
-                        ),
-                      ],
+                    _buildDateField(
+                      label: l10n.dueDate,
+                      value: dueDate,
+                      icon: Icons.calendar_today,
+                      onTap: () => _pickDate(
+                        initialValue: dueDate,
+                        firstDate: now,
+                        onPicked: (d) => setState(() {
+                          dueDate = d;
+                          if (repeatEndDate != null && repeatEndDate!.isBefore(dueDate!)) {
+                            repeatEndDate = dueDate;
+                          }
+                        }),
+                      ),
+                      onClear: () => setState(() => dueDate = null),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownMenu<RepeatFrequency>(
+                      expandedInsets: EdgeInsets.zero,
+                      label: Text(l10n.frequency),
+                      initialSelection: repeat,
+                      onSelected: (v) => setState(() => repeat = v!),
+                      dropdownMenuEntries: RepeatFrequency.values
+                          .map((r) => DropdownMenuEntry(value: r, label: r.localizedLabel(l10n)))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildDateField(
+                      label: l10n.endDate,
+                      value: repeatEndDate,
+                      icon: Icons.event_available,
+                      onTap: () => _pickDate(
+                        initialValue: repeatEndDate,
+                        firstDate: dueDate ?? now,
+                        onPicked: (d) => setState(() => repeatEndDate = d),
+                      ),
+                      onClear: () => setState(() => repeatEndDate = null),
                     ),
                     if (isEdit) ...[
                       const SizedBox(height: 24),

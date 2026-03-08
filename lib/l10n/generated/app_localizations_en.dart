@@ -250,6 +250,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearFilters => 'Clear Filters';
 
   @override
+  String get filterHelp => 'Filter Guide';
+
+  @override
+  String get filterHelpToday => 'Due today or overdue';
+
+  @override
+  String get filterHelpThisWeek => 'Due by this Sunday';
+
+  @override
+  String get filterHelpIn7Days => 'Next 7 days window';
+
+  @override
+  String get filterHelpThisMonth => 'Due by month end';
+
+  @override
+  String get filterHelpThisYear => 'Due by year end';
+
+  @override
+  String get nextSevenDays => 'In 7 Days';
+
+  @override
   String get exportData => 'Export Tasks';
 
   @override

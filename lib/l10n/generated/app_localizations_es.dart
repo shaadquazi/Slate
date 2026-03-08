@@ -251,6 +251,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get clearFilters => 'Limpiar Filtros';
 
   @override
+  String get filterHelp => 'Guía de filtros';
+
+  @override
+  String get filterHelpToday => 'Hoy o tareas atrasadas';
+
+  @override
+  String get filterHelpThisWeek => 'Vence este domingo';
+
+  @override
+  String get filterHelpIn7Days => 'Próximos 7 días';
+
+  @override
+  String get filterHelpThisMonth => 'Vence fin de mes';
+
+  @override
+  String get filterHelpThisYear => 'Vence fin de año';
+
+  @override
+  String get nextSevenDays => 'Próximos 7 días';
+
+  @override
   String get exportData => 'Exportar tareas';
 
   @override

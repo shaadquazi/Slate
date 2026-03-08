@@ -1,0 +1,12 @@
+[
+  {
+    "id": "fixture_recurring_1",
+    "title": "Daily Standup",
+    "description": "Preserve this acronym: NASA. This task repeats daily. Move this task to 'Completed' to automatically create the next occurrence for tomorrow.",
+    "status": 1,
+    "createdAt": "2026-03-08T09:00:00.000",
+    "updatedAt": "2026-03-08T09:00:00.000",
+    "repeat": 1,
+    "isDeleted": false
+  }
+]

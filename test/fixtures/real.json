@@ -1,0 +1,199 @@
+[
+  {
+    "id": "real_1",
+    "title": "NASA Project Q4 Report",
+    "description": "Preserve acronym: NASA. Finalize the budget and performance metrics for the quarterly board meeting. Use **bold** for key highlights.",
+    "status": 1,
+    "createdAt": "2026-03-08T08:00:00.000",
+    "updatedAt": "2026-03-08T08:00:00.000",
+    "repeat": 0,
+    "dueDate": "2030-04-15T17:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_2",
+    "title": "Sign Sarah's Field Trip Form",
+    "description": "OVERDUE task from yesterday. Needs to be signed and scanned back to the teacher immediately.",
+    "status": 0,
+    "createdAt": "2026-03-01T09:00:00.000",
+    "updatedAt": "2026-03-01T09:00:00.000",
+    "repeat": 0,
+    "dueDate": "2026-03-07T23:59:59.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_3",
+    "title": "Weekly Grocery Run",
+    "description": "Weekly essentials for the family.\n* [ ] 2 Gallons of Milk\n* [ ] Whole wheat bread\n* [ ] Coffee beans (Medium Roast)\n* [ ] Fresh apples and bananas for kids' lunches\n* [ ] Greek yogurt (plain)",
+    "status": 0,
+    "createdAt": "2026-03-08T10:00:00.000",
+    "updatedAt": "2026-03-08T10:00:00.000",
+    "repeat": 2,
+    "dueDate": "2030-01-12T10:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_4",
+    "title": "Daily 30-min Morning Run",
+    "description": "Daily health goal. Move this to 'Completed' to generate the next session for tomorrow.",
+    "status": 1,
+    "createdAt": "2026-03-08T06:30:00.000",
+    "updatedAt": "2026-03-08T06:30:00.000",
+    "repeat": 1,
+    "isDeleted": false
+  },
+  {
+    "id": "real_5",
+    "title": "Change AC Filters",
+    "description": "Monthly maintenance for the house. Ensure to use the high-efficiency filters from the garage.",
+    "status": 0,
+    "createdAt": "2026-03-08T11:00:00.000",
+    "updatedAt": "2026-03-08T11:00:00.000",
+    "repeat": 3,
+    "dueDate": "2030-02-01T09:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_6",
+    "title": "Pay Monthly Electricity Bill",
+    "description": "Use the online portal. Set to repeat monthly.",
+    "status": 0,
+    "createdAt": "2026-03-08T11:00:00.000",
+    "updatedAt": "2026-03-08T11:00:00.000",
+    "repeat": 3,
+    "dueDate": "2030-01-25T23:59:59.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_7",
+    "title": "Team Sync Meeting",
+    "description": "Weekly work meeting. Catch up on project blockers.",
+    "status": 1,
+    "createdAt": "2026-03-08T09:00:00.000",
+    "updatedAt": "2026-03-08T09:00:00.000",
+    "repeat": 2,
+    "dueDate": "2030-03-11T10:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_8",
+    "title": "Kids' Soccer Practice",
+    "description": "Take Leo to the park at 5 PM. Don't forget the water bottles!",
+    "status": 0,
+    "createdAt": "2026-03-08T12:00:00.000",
+    "updatedAt": "2026-03-08T12:00:00.000",
+    "repeat": 0,
+    "dueDate": "2030-03-10T17:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_9",
+    "title": "Fix Leaky Faucet in Kitchen",
+    "description": "Home repair task. Need to buy a new O-ring from the hardware store first.",
+    "status": 1,
+    "createdAt": "2026-03-08T13:00:00.000",
+    "updatedAt": "2026-03-08T13:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  },
+  {
+    "id": "real_10",
+    "title": "Anniversary Dinner Reservation",
+    "description": "Book a table at that new Italian place for Saturday night.",
+    "status": 2,
+    "createdAt": "2026-03-01T10:00:00.000",
+    "updatedAt": "2026-03-04T14:00:00.000",
+    "completedOn": "2026-03-04T14:00:00.000",
+    "repeat": 0,
+    "isDeleted": false
+  },
+  {
+    "id": "real_11",
+    "title": "Submit 2029 Tax Documents",
+    "description": "Yearly financial task. Compile all receipts and income statements for the accountant.",
+    "status": 0,
+    "createdAt": "2026-03-08T14:00:00.000",
+    "updatedAt": "2026-03-08T14:00:00.000",
+    "repeat": 4,
+    "dueDate": "2030-04-10T23:59:59.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_12",
+    "title": "Read 10 Pages of 'Atomic Habits'",
+    "description": "Personal development goal. Already finished today's reading.",
+    "status": 2,
+    "createdAt": "2026-03-08T07:00:00.000",
+    "updatedAt": "2026-03-08T07:30:00.000",
+    "completedOn": "2026-03-08T07:30:00.000",
+    "repeat": 1,
+    "isDeleted": false
+  },
+  {
+    "id": "real_13",
+    "title": "Pick up Leo's Soccer Uniform",
+    "description": "From the sports store. They are closing at 6 PM.",
+    "status": 1,
+    "createdAt": "2026-03-08T15:00:00.000",
+    "updatedAt": "2026-03-08T15:00:00.000",
+    "repeat": 0,
+    "dueDate": "2030-03-09T18:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_14",
+    "title": "Planning Summer Vacation 2030",
+    "description": "Look into flights and hotels for the trip to the coast. The kids want to go surfing this time!",
+    "status": 0,
+    "createdAt": "2026-03-08T16:00:00.000",
+    "updatedAt": "2026-03-08T16:00:00.000",
+    "repeat": 0,
+    "dueDate": "2030-06-01T12:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_15",
+    "title": "Call Mom",
+    "description": "Weekly check-in. Usually better to call on Sunday evenings.",
+    "status": 0,
+    "createdAt": "2026-03-08T17:00:00.000",
+    "updatedAt": "2026-03-08T17:00:00.000",
+    "repeat": 2,
+    "dueDate": "2030-03-10T19:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_16",
+    "title": "Mow the Lawn",
+    "description": "Weather looks good for the weekend. Need to clear the backyard too.",
+    "status": 0,
+    "createdAt": "2026-03-08T18:00:00.000",
+    "updatedAt": "2026-03-08T18:00:00.000",
+    "repeat": 0,
+    "dueDate": "2030-03-16T10:00:00.000",
+    "isDeleted": false
+  },
+  {
+    "id": "real_17",
+    "title": "Duplicated Grocery List",
+    "description": "Accidentally created twice. Moving to trash.",
+    "status": 0,
+    "createdAt": "2026-03-08T10:05:00.000",
+    "updatedAt": "2026-03-08T10:10:00.000",
+    "repeat": 0,
+    "isDeleted": true,
+    "deletedAt": "2026-03-08T10:10:00.000"
+  },
+  {
+    "id": "real_18",
+    "title": "Old Work Task",
+    "description": "Not relevant anymore. Moved to trash.",
+    "status": 2,
+    "createdAt": "2026-02-01T09:00:00.000",
+    "updatedAt": "2026-03-08T11:00:00.000",
+    "completedOn": "2026-03-01T17:00:00.000",
+    "repeat": 0,
+    "isDeleted": true,
+    "deletedAt": "2026-03-08T11:00:00.000"
+  }
+]

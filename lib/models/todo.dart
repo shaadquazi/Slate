@@ -125,20 +125,30 @@ class Todo extends HiveObject {
   }
 
   factory Todo.fromJson(Map<String, dynamic> json) {
+    // Helper to safely parse int fields that might come as strings or invalid values
+    int parseEnum(dynamic value, int length, int defaultValue) {
+      if (value is int && value >= 0 && value < length) return value;
+      if (value is String) {
+        final parsed = int.tryParse(value);
+        if (parsed != null && parsed >= 0 && parsed < length) return parsed;
+      }
+      return defaultValue;
+    }
+
     return Todo(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      status: Status.values[json['status'] as int],
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-      repeat: RepeatFrequency.values[json['repeat'] as int],
-      repeatEndDate: json['repeatEndDate'] != null ? DateTime.parse(json['repeatEndDate'] as String) : null,
-      completedOn: json['completedOn'] != null ? DateTime.parse(json['completedOn'] as String) : null,
-      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate'] as String) : null,
+      id: (json['id'] ?? DateTime.now().millisecondsSinceEpoch).toString(),
+      title: json['title'] as String? ?? 'Untitled',
+      description: json['description'] as String? ?? '',
+      status: Status.values[parseEnum(json['status'], Status.values.length, 0)],
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updatedAt']?.toString() ?? '') ?? DateTime.now(),
+      repeat: RepeatFrequency.values[parseEnum(json['repeat'], RepeatFrequency.values.length, 0)],
+      repeatEndDate: json['repeatEndDate'] != null ? DateTime.tryParse(json['repeatEndDate'].toString()) : null,
+      completedOn: json['completedOn'] != null ? DateTime.tryParse(json['completedOn'].toString()) : null,
+      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate'].toString()) : null,
       imagePath: json['imagePath'] as String?,
       isDeleted: json['isDeleted'] as bool? ?? false,
-      deletedAt: json['deletedAt'] != null ? DateTime.parse(json['deletedAt'] as String) : null,
+      deletedAt: json['deletedAt'] != null ? DateTime.tryParse(json['deletedAt'].toString()) : null,
     );
   }
 }
@@ -194,7 +204,7 @@ extension RepeatFrequencyX on RepeatFrequency {
   }
 }
 
-enum DateFilter { daily, weekly, monthly, yearly }
+enum DateFilter { daily, weekly, rollingWeek, monthly, yearly }
 
 extension DateFilterX on DateFilter {
   String label(AppLocalizations l10n) {
@@ -203,6 +213,8 @@ extension DateFilterX on DateFilter {
         return l10n.today;
       case DateFilter.weekly:
         return l10n.thisWeek;
+      case DateFilter.rollingWeek:
+        return l10n.nextSevenDays;
       case DateFilter.monthly:
         return l10n.thisMonth;
       case DateFilter.yearly:

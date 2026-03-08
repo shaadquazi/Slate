@@ -1,0 +1,13 @@
+[
+  {
+    "id": "fixture_overdue_1",
+    "title": "Overdue Styling Test",
+    "description": "This fixture verifies that tasks with past due dates appear with high-priority Red and Bold styling.",
+    "status": 0,
+    "createdAt": "2026-03-01T10:00:00.000",
+    "updatedAt": "2026-03-01T10:00:00.000",
+    "repeat": 0,
+    "dueDate": "2026-03-07T23:59:59.000",
+    "isDeleted": false
+  }
+]

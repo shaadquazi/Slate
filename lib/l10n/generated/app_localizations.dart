@@ -566,6 +566,48 @@ abstract class AppLocalizations {
   /// **'Clear Filters'**
   String get clearFilters;
 
+  /// No description provided for @filterHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter Guide'**
+  String get filterHelp;
+
+  /// No description provided for @filterHelpToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today or overdue'**
+  String get filterHelpToday;
+
+  /// No description provided for @filterHelpThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Due by this Sunday'**
+  String get filterHelpThisWeek;
+
+  /// No description provided for @filterHelpIn7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Next 7 days window'**
+  String get filterHelpIn7Days;
+
+  /// No description provided for @filterHelpThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Due by month end'**
+  String get filterHelpThisMonth;
+
+  /// No description provided for @filterHelpThisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Due by year end'**
+  String get filterHelpThisYear;
+
+  /// No description provided for @nextSevenDays.
+  ///
+  /// In en, this message translates to:
+  /// **'In 7 Days'**
+  String get nextSevenDays;
+
   /// No description provided for @exportData.
   ///
   /// In en, this message translates to:

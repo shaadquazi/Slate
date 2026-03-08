@@ -57,6 +57,9 @@ class TodoService {
         case DateFilter.weekly:
           final lastDayOfWeek = today.add(Duration(days: 7 - today.weekday));
           if (!due.isAfter(lastDayOfWeek)) return true;
+        case DateFilter.rollingWeek:
+          final inSevenDays = today.add(const Duration(days: 7));
+          if (!due.isAfter(inSevenDays)) return true;
         case DateFilter.monthly:
           final lastDayOfMonth = DateTime(today.year, today.month + 1, 0);
           if (!due.isAfter(lastDayOfMonth)) return true;

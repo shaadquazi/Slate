@@ -104,29 +104,29 @@ class TodoRepository {
       final dynamic decoded = jsonDecode(jsonString);
       
       List<dynamic> list;
-      if (decoded is Map && decoded.containsKey('todos')) {
-        list = decoded['todos'] as List<dynamic>;
-      } else if (decoded is List) {
+      if (decoded is List) {
         list = decoded;
+      } else if (decoded is Map && decoded.containsKey('todos')) {
+        list = decoded['todos'] as List<dynamic>;
+      } else if (decoded is Map) {
+        list = [decoded];
       } else {
-        throw 'Invalid JSON structure: Expected List or Map with "todos" key';
+        throw 'Invalid JSON structure';
       }
 
       int importedCount = 0;
       for (final item in list) {
         if (item is Map<String, dynamic>) {
           try {
+            if (!item.containsKey('id') || !item.containsKey('title')) continue;
             final todo = Todo.fromJson(item);
             await saveTodo(todo);
             importedCount++;
-          } catch (itemError) {
-            logger.w('Skipping invalid todo item: $itemError');
-          }
+          } catch (_) {}
         }
       }
       return importedCount;
     } catch (e) {
-      logger.e('Import failed', error: e);
       rethrow;
     }
   }
